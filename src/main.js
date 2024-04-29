@@ -3,6 +3,11 @@ import App from './App.vue'
 import router from './router.js'
 import { initializeApp } from 'firebase/app';
 import { getAuth , createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+//firestore
+import { getFirestore, collection, getDocs, addDoc } from 'firebase/firestore';
+import 'bulma/css/bulma.css'
+import '@fortawesome/fontawesome-free/css/all.css'
+
 
 
 
@@ -17,6 +22,8 @@ const firebaseConfig = {
   
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
+
   
   export const registerUser = (email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -25,9 +32,20 @@ const firebaseConfig = {
   export const loginUser = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
+  export const getIdeas = async () => {
+    const ideasCollection = collection(db, 'ideas');
+    const ideasSnapshot = await getDocs(ideasCollection);
+    return ideasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  };
+  export const addIdea = async (idea) => {
+    const ideasCollection = collection(db, 'ideas');
+    return await addDoc(ideasCollection, idea);
+  };
 
 createApp(App)
 .use(router)
+
+
 
 .use(auth)
 .use(firebaseApp)
