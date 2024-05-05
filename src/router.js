@@ -4,6 +4,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import Login from './pages/UserLogin.vue'
 import Register from './pages/UserRegister.vue'
 import Dashboard from './pages/UserDashboard.vue'
+import MyIdeas from './pages/UserIdea.vue'
 
 
 const routes = [
@@ -22,6 +23,11 @@ const routes = [
       name: 'Dashboard',
       component: Dashboard 
     },
+    {
+      path: '/myideas',
+      name:'MyIdeas',
+      component: MyIdeas
+    }
 
   
 

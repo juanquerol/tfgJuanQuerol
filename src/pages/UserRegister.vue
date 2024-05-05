@@ -4,7 +4,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { registerUser } from '@/main.js';
+import { addUser, registerUser } from '@/main.js';
 //import { inject } from 'vue';
 
 
@@ -12,10 +12,20 @@ export default {
   setup() {
     
     const router = useRouter();
+    const user = ref(
+      {
+        Email: '',
+        Contraseña: '',
+        Nombre: '',
+        Cumpleaños: '',
+        Ciudad: '',
+        Pais: '',
+      }
+        
+
+    )
     
-    const email = ref('')
-    const password = ref('')
-    const username = ref('')
+    
     const rptpassword = ref('')
 
     const loginChange = () => {
@@ -23,12 +33,13 @@ export default {
       
     }
 
+
     const submitRegister = () => {
-      if (password.value.length < 6) {
+      if (user.value.Contraseña.length < 6) {
         alert('La contraseña debe tener al menos 6 caracteres')
         return
       }
-      if (password.value !== rptpassword.value) {
+      if (user.value.Contraseña !== rptpassword.value) {
         alert('Las contraseñas no coinciden')
         return
       }
@@ -36,23 +47,24 @@ export default {
     }
 
     const register = async () => {
-      try {
-        await registerUser(email.value, password.value)
-        router.push('/dashboard')
-      } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
-          alert('Ya existe una cuenta con ese correo electrónico')
-        } else {
-          console.log(error)
-        }
-      }
+  try {
+    await registerUser(user.value.Email, user.value.Contraseña)
+    
+    await addUser(user.value )
+    router.push('/dashboard')
+  } catch (error) {
+    if (error.code === 'auth/email-already-in-use') {
+      alert('Ya existe una cuenta con ese correo electrónico')
+    } else {
+      console.log(error)
     }
+  }
+}
 
     return {
-      email,
-      password,
-      username,
+     
       rptpassword,
+      user,
       loginChange,
       submitRegister,
       register
@@ -70,7 +82,7 @@ export default {
               <h3 class="title has-text-dark">Registrarse</h3>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="text" v-model="username" placeholder="Nombre de usuario">
+                  <input class="input is-large" type="text" v-model="user.Nombre" placeholder="Nombre de usuario">
                   <span class="icon is-small is-left">
                     <i class="fas fa-user"></i>
                   </span>
@@ -78,7 +90,7 @@ export default {
               </div>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="email" v-model="email" placeholder="Correo electrónico">
+                  <input class="input is-large" type="email" v-model="user.Email" placeholder="Correo electrónico">
                   <span class="icon is-small is-left">
                     <i class="fas fa-envelope"></i>
                   </span>
@@ -86,7 +98,7 @@ export default {
               </div>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="password" v-model="password" placeholder="Contraseña">
+                  <input class="input is-large" type="password" v-model="user.Contraseña" placeholder="Contraseña">
                   <span class="icon is-small is-left">
                     <i class="fas fa-lock"></i>
                   </span>
@@ -97,6 +109,30 @@ export default {
                   <input class="input is-large" type="password" v-model="rptpassword" placeholder="Repetir Contraseña">
                   <span class="icon is-small is-left">
                     <i class="fas fa-lock"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="control has-icons-left">
+                  <input class="input is-large" type="date" v-model="user.Cumpleaños" placeholder="Fecha de Cumpleaños">
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-calendar"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="control has-icons-left">
+                  <input class="input is-large" type="text" v-model="user.Pais" placeholder="País">
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-globe"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="control has-icons-left">
+                  <input class="input is-large" type="text" v-model="user.Ciudad" placeholder="Ciudad">
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-globe"></i>
                   </span>
                 </div>
               </div>

@@ -6,17 +6,27 @@
           <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
           <router-link class="navbar-item" to="/amigos">Amigos</router-link>
           <router-link class="navbar-item" to="/populares">Populares</router-link>
-          <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
+          <router-link class="navbar-item" to="/myideas">Mis Ideas</router-link>
         </div>
       </div>
     </nav>
     <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
     <div class="columns is-multiline">
       <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index">
+        
         <div class="card">
           <div class="card-content">
-            <div class="content">
-              <h2 class="title">{{ idea.Titulo }}</h2>
+            
+              <div class="content" v-if="idea.editing">
+                  <!-- Formulario de edición -->
+                  <input v-model="idea.Titulo" placeholder="Título">
+                  <textarea v-model="idea.Descripcion" placeholder="Descripción"></textarea>
+                  <!-- Agrega más campos según sea necesario -->
+                  <button @click="saveIdea(idea)">Guardar</button>
+                  <button @click="cancelEdit(idea)">Cancelar</button>
+                </div>
+                <div class="content" v-else>
+                  <h2 class="title">{{ idea.Titulo }}</h2>
               <p>{{ idea.Descripcion }}</p>
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
@@ -24,44 +34,70 @@
               <p><strong>Forma:</strong> {{ idea.Forma }}</p>
               
               <p><strong>Propietario:</strong> {{ idea.Propietario}}</p>
+              <button @click="enableEdit(idea)">Editar</button>
+              <button @click="deleteIdeaUI(idea.id)">Eliminar</button>
+                </div>
               
-            </div>
+              
+            
           </div>
         </div>
       </div>
     </div>
-    <div>
-      <CrearIdea/>
-    </div>
+    
   </div>
   </template>
   
   <script>
  import { ref, onMounted } from 'vue'
-import { getIdeas } from '@/main.js'
-import CrearIdea from '@/components/CrearIdea.vue'
+import { getIdeas , getMyIdeas, updateIdea, deleteIdea} from '@/main.js'
+
 
 export default {
   name: 'UserDashboard',
   components: {
-    CrearIdea
+    
   },
+  
   setup() {
     const ideas = ref([])
+
+    const saveIdea = async (idea) => {
+  await updateIdea(idea.id, { Titulo: idea.Titulo, Descripcion: idea.Descripcion /* otros campos */ });
+  idea.editing = false;
+}
+const deleteIdeaUI = async (id) => {
+      await deleteIdea(id); // Llama al método deleteIdea de main.js
+      ideas.value = ideas.value.filter(idea => idea.id !== id); // Actualiza la lista de ideas en la UI
+    }
+
+    const cancelEdit = (idea) => {
+      idea.editing = false
+    }
+
+    const enableEdit = (idea) => {
+      idea.editing = true
+    }
+    
     const fetchIdeas = async () => {
   ideas.value = await getIdeas()
 }
     onMounted(async () => {
-      const data = await getIdeas()
+      const data = await getMyIdeas()
   console.log(data)  // Agrega esta línea
   ideas.value = data
     })
+
     
 
     return {
       
       ideas,
-      fetchIdeas
+      fetchIdeas,
+      saveIdea,
+      cancelEdit,
+      enableEdit,
+      deleteIdeaUI
     }
   }
 }
