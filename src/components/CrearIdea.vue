@@ -1,9 +1,9 @@
 <template>
-  
   <div class="crear-idea">
     <div class="container">
-      <div class="columns is-centered">
-        <div class="column is-one-third">
+      <div class="columns">
+        <!-- Tarjeta central -->
+        <div class="column is-two-thirds">
           <div class="card">
             <header class="card-header">
               <p class="card-header-title">
@@ -11,26 +11,42 @@
               </p>
             </header>
             <div class="card-content">
-              <form @submit.prevent="submitIdea">
-                <div class="field">
-                  <label class="label" for="titulo">Título:</label>
-                  <div class="control">
-                    <input class="input" id="titulo" v-model="idea.Titulo" required>
-                  </div>
+              <!-- Inputs de la tarjeta central -->
+              <div class="field">
+                <label class="label">Título</label>
+                <div class="control">
+                  <input class="input" v-model="idea.Titulo" type="text" placeholder="Título de la idea">
                 </div>
-                <div class="field">
-                  <label class="label" for="descripcion">Descripción:</label>
-                  <div class="control">
-                    <textarea class="textarea" id="descripcion" v-model="idea.Descripcion" required></textarea>
-                  </div>
+              </div>
+              <div class="field">
+                <label class="label">Descripción</label>
+                <div class="control">
+                  <textarea class="textarea" v-model="idea.Descripcion" placeholder="Descripción de la idea"></textarea>
                 </div>
-                <div class="field">
-        <label class="label" for="categoria">Categoría:</label>
-        <div class="control">
-          <input class="input" id="categoria" v-model="idea.Categoria">
+              </div>
+              <div class="field">
+                <label class="label">Categoría</label>
+                <div class="control">
+                  <input class="input" v-model="idea.Categoria" type="text" placeholder="Categoría de la idea">
+                </div>
+              </div>
+              <!-- Agrega más campos aquí según tus necesidades -->
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="field" v-for="(amigo, index) in idea.Amigos" :key="index">
+        <!-- Menú a la derecha -->
+        <div class="column is-one-third">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                Menú
+              </p>
+            </header>
+            <div class="card-content">
+              <!-- Contenido del menú a la derecha -->
+              <div class="content">
+                <!-- Mostrar título, descripción y categoría de la idea -->
+                <div class="field" v-for="(amigo, index) in idea.Amigos" :key="index">
         <label class="label" :for="'amigo-' + index">Amigo {{ index + 1 }}:</label>
         <div class="control">
           <input class="input" :id="'amigo-' + index" v-model="idea.Amigos[index]">
@@ -42,12 +58,7 @@
         </div>
       </div>
       
-      <div class="field">
-        <label class="label" for="fecha">Fecha:</label>
-        <div class="control">
-          <input class="input" id="fecha" type="date" v-model="idea.Fecha">
-        </div>
-      </div>
+      
       <div class="field">
         <label class="label" for="forma">Forma:</label>
         <div class="control">
@@ -60,16 +71,18 @@
           <input class="checkbox" id="publico" type="checkbox" v-model="idea.Publico">
         </div>
       </div>
-      
-                <!-- Más campos aquí -->
-                <div class="field">
-                  <div class="control">
-                    <button class="button is-primary" type="submit">Crear Idea</button>
-                  </div>
-                </div>
-              </form>
+                <!-- Agrega más detalles aquí si es necesario -->
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- Botón "Crear Idea" -->
+    <div class="container">
+      <div class="columns">
+        <div class="column">
+          <button class="button is-primary" @click="submitIdea()">Crear Idea</button>
         </div>
       </div>
     </div>
@@ -82,15 +95,17 @@
 import { getIdeas, addIdea, getNombreByEmail, getUUID } from '@/main.js'
 
 
+
 export default {
   name: 'CrearIdea',
-  setup() {
+  setup(props, { emit }) {
     const idea = ref({
+      
       Titulo: '',
       Descripcion: '',
       Categoria: '',
       Amigos: [''],
-      Fecha: '',
+      Fecha: new Date(),
       Forma: '',
       Publico: false,
       Propietario: '',
@@ -105,16 +120,20 @@ export default {
     const fetchIdeas = async () => {
       ideas.value = await getIdeas()
     }
+    
 
     const addAmigo = () => {
       idea.value.Amigos.push('')
     }
     const submitIdea = async () => {
+      
       const nombre = await getNombreByEmail()
       idea.value.Propietario = nombre
       idea.value.IdUsuario = await getUUID()
       await addIdea(idea.value)
       await fetchIdeas()  // Refresca las ideas después de añadir la nueva idea
+      emit('idea-creada'); // Emite el evento
+      location.reload();
     }
 
     onMounted(fetchIdeas)
@@ -127,6 +146,8 @@ export default {
       fetchIdeas,
       submitIdea,
       addAmigo
+      
+
     }
   }
 }

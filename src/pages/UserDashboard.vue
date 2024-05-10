@@ -1,6 +1,6 @@
 <template>
     <div class="user-dashboard">
-    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+      <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
       <div class="navbar-menu">
         <div class="navbar-start">
           <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
@@ -11,8 +11,47 @@
       </div>
     </nav>
     <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
-    <div class="columns is-multiline">
-      <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index">
+    <div v-if="showForm">
+      <button class="button is-info" @click="showForm = false">cancelar</button>
+      <CrearIdea @idea-creada="showForm = false"/> <!-- Escucha el evento aquí -->
+      
+    </div>
+    <div v-else>
+      <div v-if="selectedIdea" class="columns is-centered">
+  <!-- Muestra la idea seleccionada -->
+  <div class="column is-half">
+    <div class="card">
+      <div class="card-content">
+        <div class="content">
+          <h2 class="title">{{ selectedIdea.Titulo }}</h2>
+          <p>{{ selectedIdea.Descripcion }}</p>
+          <p><strong>Categoría:</strong> {{ selectedIdea.Categoria }}</p>
+          <p><strong>Amigos:</strong> {{ selectedIdea.Amigos.join(', ') }}</p>
+
+          <button class="button is-info" @click="selectedIdea = null">Volver a la lista</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <header class="card-header">
+        <p class="card-header-title">
+          Comentarios
+        </p>
+      </header>
+      <div class="card-content">
+        <div class="content">
+          <div class="field" v-for="(comentario, index) in comentarios" :key="index">
+            <label class="label">Comentario {{ index + 1 }}</label>
+            <p>{{ comentario.Contenido }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+      <div v-else class="columns is-multiline">
+      <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index" @click="selectIdea(idea)">
         <div class="card">
           <div class="card-content">
             <div class="content">
@@ -20,25 +59,24 @@
               <p>{{ idea.Descripcion }}</p>
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
-              <p><strong>Fecha:</strong> {{ idea.Fecha }}</p>
-              <p><strong>Forma:</strong> {{ idea.Forma }}</p>
               
-              <p><strong>Propietario:</strong> {{ idea.Propietario}}</p>
               
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div>
-      <CrearIdea/>
+    <button class="button is-primary" @click="showForm = true">crear idea</button>
     </div>
+    
+    
+    
   </div>
   </template>
   
   <script>
  import { ref, onMounted } from 'vue'
-import { getIdeas } from '@/main.js'
+import { getIdeas, cometariosIdea, crearComentario  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 
 export default {
@@ -48,9 +86,35 @@ export default {
   },
   setup() {
     const ideas = ref([])
+    const comentarios = ref([]);
+    const selectedIdea = ref(null);
+    const showForm = ref(false); // Nuevo estado para mostrar/ocultar el formulario
     const fetchIdeas = async () => {
   ideas.value = await getIdeas()
 }
+
+
+
+const selectIdea = async (idea) => {
+  selectedIdea.value = idea;
+  
+  if (idea.id) {
+    comentarios.value = await cometariosIdea(idea.id);
+  }
+};
+const nuevoComentario = ref({
+    texto: '',
+    fecha: new Date(),
+    autor: 'Nombre del autor' // Reemplaza esto con el nombre del autor actual
+  });
+const agregarComentario = async () => {
+    if (selectedIdea.value && selectedIdea.value.id) {
+      await crearComentario(selectedIdea.value.id, nuevoComentario.value);
+      nuevoComentario.value.texto = '';
+      comentarios.value = await cometariosIdea(selectedIdea.value.id);
+    }
+  };
+
     onMounted(async () => {
       const data = await getIdeas()
   console.log(data)  // Agrega esta línea
@@ -61,7 +125,14 @@ export default {
     return {
       
       ideas,
-      fetchIdeas
+      fetchIdeas,
+      selectedIdea,
+      selectIdea,
+      showForm,
+      comentarios,
+      agregarComentario,
+      
+      
     }
   }
 }

@@ -19,23 +19,39 @@
             
               <div class="content" v-if="idea.editing">
                   <!-- Formulario de edición -->
-                  <input v-model="idea.Titulo" placeholder="Título">
-                  <textarea v-model="idea.Descripcion" placeholder="Descripción"></textarea>
+                  <div class="field">
+      <label class="label">Título</label>
+      <div class="control">
+        <input class="input" v-model="idea.Titulo" placeholder="Título">
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Descripción</label>
+      <div class="control">
+        <textarea class="textarea" v-model="idea.Descripcion" placeholder="Descripción"></textarea>
+      </div>
+    </div>
                   <!-- Agrega más campos según sea necesario -->
-                  <button @click="saveIdea(idea)">Guardar</button>
-                  <button @click="cancelEdit(idea)">Cancelar</button>
-                </div>
+                  <div class="field is-grouped">
+      <div class="control">
+        <button class="button is-link" @click="saveIdea(idea)">Guardar</button>
+      </div>
+      <div class="control">
+        <button class="button is-text" @click="cancelEdit(idea)">Cancelar</button>
+      </div>
+    </div>
+  </div>
                 <div class="content" v-else>
                   <h2 class="title">{{ idea.Titulo }}</h2>
               <p>{{ idea.Descripcion }}</p>
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
-              <p><strong>Fecha:</strong> {{ idea.Fecha }}</p>
+              <p><strong>Fecha:</strong> {{ formatDate(idea.Fecha) }}</p> <!-- Usa la función formatDate aquí -->
               <p><strong>Forma:</strong> {{ idea.Forma }}</p>
               
               <p><strong>Propietario:</strong> {{ idea.Propietario}}</p>
-              <button @click="enableEdit(idea)">Editar</button>
-              <button @click="deleteIdeaUI(idea.id)">Eliminar</button>
+              <button class="button is-primary" @click="enableEdit(idea)">Editar</button>
+    <button class="button is-danger" @click="deleteIdeaUI(idea.id)">Eliminar</button>
                 </div>
               
               
@@ -51,6 +67,7 @@
   <script>
  import { ref, onMounted } from 'vue'
 import { getIdeas , getMyIdeas, updateIdea, deleteIdea} from '@/main.js'
+import { format } from 'date-fns'
 
 
 export default {
@@ -61,7 +78,10 @@ export default {
   
   setup() {
     const ideas = ref([])
-
+    const formatDate = (timestamp) => {
+      const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
+      return format(date, 'dd/MM/yyyy'); // Formatea la fecha
+    };
     const saveIdea = async (idea) => {
   await updateIdea(idea.id, { Titulo: idea.Titulo, Descripcion: idea.Descripcion /* otros campos */ });
   idea.editing = false;
@@ -97,7 +117,8 @@ const deleteIdeaUI = async (id) => {
       saveIdea,
       cancelEdit,
       enableEdit,
-      deleteIdeaUI
+      deleteIdeaUI,
+      formatDate
     }
   }
 }
