@@ -110,6 +110,7 @@ export default {
       Publico: false,
       Propietario: '',
       IdUsuario: '',
+      Likes: 0,
 
     })
 

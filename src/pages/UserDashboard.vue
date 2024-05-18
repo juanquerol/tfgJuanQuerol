@@ -41,8 +41,21 @@
       <div class="card-content">
         <div class="content">
           <div class="field" v-for="(comentario, index) in comentarios" :key="index">
-            <label class="label">Comentario {{ index + 1 }}</label>
+            <label class="label">{{ nuevoComentario.Persona }}</label>
             <p>{{ comentario.Contenido }}</p>
+          </div>
+          <div>
+            <label class="label">Nuevo comentario</label>
+            <div class="field">
+              <div class="control">
+                <textarea class="textarea" v-model="nuevoComentario.Contenido" placeholder="Escribe un comentario"></textarea>
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <button class="button is-primary" @click="agregarComentario">Agregar comentario</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -76,7 +89,7 @@
   
   <script>
  import { ref, onMounted } from 'vue'
-import { getIdeas, cometariosIdea, crearComentario  } from '@/main.js'
+import { getIdeas, cometariosIdea, crearComentario, getUUID, getNombreByEmail  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 
 export default {
@@ -89,6 +102,7 @@ export default {
     const comentarios = ref([]);
     const selectedIdea = ref(null);
     const showForm = ref(false); // Nuevo estado para mostrar/ocultar el formulario
+    let nombreUsuario = ref(''); // Define nombreUsuario aquí
     const fetchIdeas = async () => {
   ideas.value = await getIdeas()
 }
@@ -102,19 +116,28 @@ const selectIdea = async (idea) => {
     comentarios.value = await cometariosIdea(idea.id);
   }
 };
-const nuevoComentario = ref({
-    texto: '',
-    fecha: new Date(),
-    autor: 'Nombre del autor' // Reemplaza esto con el nombre del autor actual
-  });
-const agregarComentario = async () => {
-    if (selectedIdea.value && selectedIdea.value.id) {
-      await crearComentario(selectedIdea.value.id, nuevoComentario.value);
-      nuevoComentario.value.texto = '';
-      comentarios.value = await cometariosIdea(selectedIdea.value.id);
-    }
-  };
 
+const nuevoComentario = ref({
+  Contenido: '',
+  IdPersona: '',
+  IdIdea: '',
+  Persona: ''
+});
+
+const agregarComentario = async () => {
+  if (selectedIdea.value && selectedIdea.value.id) {
+    // Obtén idPersona antes de llamar a crearComentario
+    nuevoComentario.value.IdPersona = await getUUID();
+    
+    // Obtén nombreUsuario antes de llamar a crearComentario
+    nombreUsuario = await getNombreByEmail();
+    nuevoComentario.value.Persona = nombreUsuario;
+
+    await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona); 
+
+    comentarios.value = await cometariosIdea(selectedIdea.value.id);
+  }
+};
     onMounted(async () => {
       const data = await getIdeas()
   console.log(data)  // Agrega esta línea
@@ -131,6 +154,9 @@ const agregarComentario = async () => {
       showForm,
       comentarios,
       agregarComentario,
+      nuevoComentario,
+      nombreUsuario
+      
       
       
     }

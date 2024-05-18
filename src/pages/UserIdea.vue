@@ -11,8 +11,60 @@
       </div>
     </nav>
     <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
-    <div class="columns is-multiline">
-      <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index">
+    <div v-if="selectedIdea" class="columns is-centered">
+      <div class="column is-half">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            {{ selectedIdea.Titulo }}
+          </p>
+        </header>
+        <div class="card-content">
+          <div class="content">
+            <p>{{ selectedIdea.Descripcion }}</p>
+            <p><strong>Categoría:</strong> {{ selectedIdea.Categoria }}</p>
+            <p><strong>Amigos:</strong> {{ selectedIdea.Amigos.join(', ') }}</p>
+            <p><strong>Fecha:</strong> {{ formatDate(selectedIdea.Fecha) }}</p>
+            <p><strong>Forma:</strong> {{ selectedIdea.Forma }}</p>
+            <p><strong>Propietario:</strong> {{ selectedIdea.Propietario}}</p>
+            <button class="button is-primary" @click="enableEdit(selectedIdea)">Editar</button>
+            <button class="button is-danger" @click="deleteIdeaUI(selectedIdea.id)">Eliminar</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            Comentarios
+          </p>
+        </header>
+        <div class="card-content">
+          <div class="content">
+            <div class="field" v-for="(comentario, index) in comentarios" :key="index">
+              <label class="label">{{ comentario.Persona }}</label>
+              <p>{{ comentario.Contenido }}</p>
+            </div>
+            <div>
+              <label class="label">Nuevo comentario</label>
+              <div class="field">
+                <div class="control">
+                  <textarea class="textarea" v-model="nuevoComentario.Contenido" placeholder="Escribe un comentario"></textarea>
+                </div>
+              </div>
+              <div class="field">
+                <div class="control">
+                  <button class="button is-primary" @click="agregarComentario">Agregar comentario</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div v-else class="columns is-multiline">
+      <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index" @click="selectIdea(idea)">
         
         <div class="card">
           <div class="card-content">
@@ -66,7 +118,7 @@
   
   <script>
  import { ref, onMounted } from 'vue'
-import { getIdeas , getMyIdeas, updateIdea, deleteIdea} from '@/main.js'
+import { getIdeas , getMyIdeas, updateIdea, deleteIdea, cometariosIdea, crearComentario, getUUID, getNombreByEmail} from '@/main.js'
 import { format } from 'date-fns'
 
 
@@ -78,6 +130,30 @@ export default {
   
   setup() {
     const ideas = ref([])
+    const selectedIdea = ref(null)
+    const comentarios = ref([])
+    const nuevoComentario = ref({
+      Contenido: '',
+      IdPersona: '',
+      IdIdea: '',
+      Persona: ''
+    })
+    const selectIdea = async (idea) => {
+      selectedIdea.value = idea
+      if (idea.id) {
+        comentarios.value = await cometariosIdea(idea.id)
+      }
+    }
+
+    const agregarComentario = async () => {
+      if (selectedIdea.value && selectedIdea.value.id) {
+        nuevoComentario.value.IdPersona = await getUUID()
+        const nombreUsuario = await getNombreByEmail()
+        nuevoComentario.value.Persona = nombreUsuario
+        await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona)
+        comentarios.value = await cometariosIdea(selectedIdea.value.id)
+      }
+    }
     const formatDate = (timestamp) => {
       const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
       return format(date, 'dd/MM/yyyy'); // Formatea la fecha
@@ -118,7 +194,12 @@ const deleteIdeaUI = async (id) => {
       cancelEdit,
       enableEdit,
       deleteIdeaUI,
-      formatDate
+      formatDate,
+      selectedIdea,
+      selectIdea,
+      comentarios,
+      agregarComentario,
+      nuevoComentario
     }
   }
 }

@@ -116,6 +116,18 @@ const firebaseConfig = {
       throw new Error('ideaId debe ser una cadena');
     }
   
+    // Comprueba si idPersona es undefined
+    if (idPersona === undefined) {
+      // Si idPersona es undefined, obtén el UUID del usuario actual
+      idPersona = await getUUID();
+    }
+  
+    // Comprueba si responder es undefined
+    if (responder === undefined) {
+      // Si responder es undefined, asigna un valor por defecto
+      responder = 'Valor por defecto'; // Reemplaza 'Valor por defecto' con el valor que desees
+    }
+  
     const comentario = {
       Contenido: contenido,
       Fecha: new Date(),
