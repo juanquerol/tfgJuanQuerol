@@ -8,6 +8,25 @@
           <router-link class="navbar-item" to="/populares">Populares</router-link>
           <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
         </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="field has-addons">
+              <div class="control">
+                <input class="input" type="text" placeholder="Buscar">
+              </div>
+              <div class="control">
+                <button class="button is-info">
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="navbar-item">
+            <figure class="image is-48x48">
+              <img class="is-rounded" src="url_de_la_imagen_de_perfil" alt="Imagen de perfil">
+            </figure>
+          </div>
+        </div>
       </div>
     </nav>
     <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
@@ -69,11 +88,22 @@
           <div class="card-content">
             <div class="content">
               <h2 class="title">{{ idea.Titulo }}</h2>
-              <p>{{ idea.Descripcion }}</p>
+              <div class="field">
+      
+              <div class="control description-container">
+                <p class="description-text" :class="{ 'is-clamped': isClamped }">{{ idea.Descripcion }}</p>
+                <button v-if="isClamped" class="button buttonMore is-info is-small" @click="isClamped = false">Saber más</button>
+              </div>
+            </div>
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
               
-              
+              <button class="button is-danger" :class="{ 'animate-like': isAnimating===idea.id }" @click.stop="addLike(idea)">
+                <span class="icon">
+                  <i class="fas fa-heart"></i> <!-- Icono de corazón -->
+                </span>
+                <span>{{ idea.Likes }}</span> <!-- Mostrar cantidad de likes -->
+              </button>
             </div>
           </div>
         </div>
@@ -89,7 +119,7 @@
   
   <script>
  import { ref, onMounted } from 'vue'
-import { getIdeas, cometariosIdea, crearComentario, getUUID, getNombreByEmail  } from '@/main.js'
+import { getIdeas, cometariosIdea, crearComentario, getUUID, getNombreByEmail,addLikeToIdea  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 
 export default {
@@ -100,9 +130,12 @@ export default {
   setup() {
     const ideas = ref([])
     const comentarios = ref([]);
+    const isClamped = ref(true);
     const selectedIdea = ref(null);
+    const isAnimating = ref(false); // Define isAnimating aquí
     const showForm = ref(false); // Nuevo estado para mostrar/ocultar el formulario
     let nombreUsuario = ref(''); // Define nombreUsuario aquí
+    
     const fetchIdeas = async () => {
   ideas.value = await getIdeas()
 }
@@ -110,7 +143,7 @@ export default {
 
 
 const selectIdea = async (idea) => {
-  selectedIdea.value = idea;
+  selectedIdea.value = idea.id;
   
   if (idea.id) {
     comentarios.value = await cometariosIdea(idea.id);
@@ -138,6 +171,17 @@ const agregarComentario = async () => {
     comentarios.value = await cometariosIdea(selectedIdea.value.id);
   }
 };
+const addLike = async (idea) => {
+      
+  
+  isAnimating.value = true;
+  await addLikeToIdea(idea.id); // Llamar a la función para actualizar el like en la base de datos
+  fetchIdeas();
+  setTimeout(() => {
+    isAnimating.value = false;
+  }, 2000);
+
+    };
     onMounted(async () => {
       const data = await getIdeas()
   console.log(data)  // Agrega esta línea
@@ -146,7 +190,7 @@ const agregarComentario = async () => {
     
 
     return {
-      
+      isAnimating,
       ideas,
       fetchIdeas,
       selectedIdea,
@@ -155,7 +199,11 @@ const agregarComentario = async () => {
       comentarios,
       agregarComentario,
       nuevoComentario,
-      nombreUsuario
+      nombreUsuario,
+      addLike,
+      isClamped,
+      
+
       
       
       
@@ -182,11 +230,62 @@ const agregarComentario = async () => {
   min-height: 100vh;
 }
 
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
+.navbar-start {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-end {
+  display: flex;
+  gap: 1rem;
+}
+
 .navbar-item {
   color: #fff;
 }
 
 .navbar-item:hover {
   color: #00d1b2;
+}
+.description-container {
+  position: relative;
+  max-height: 3.6em; /* Altura para dos líneas de texto */
+  overflow: hidden;
+}
+
+.description-text.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buttonMore {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.animate-like {
+  animation: pulse 2s;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
   </style>
