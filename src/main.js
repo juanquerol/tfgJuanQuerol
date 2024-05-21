@@ -56,11 +56,16 @@ export const addUser = async (persona) => {
 export const getUUID= async () => {
   return auth.currentUser.uid;
 } 
-export const filterIdeas = async (criteria) => {
-  const ideasCollection = collection(db, 'ideas');
-  const q = query(ideasCollection, where('Titulo', '>=', criteria)); // Filtra por el criterio proporcionado
-  const ideasSnapshot = await getDocs(q);
-  return ideasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// export const filterIdeas = async (criteria) => {
+//   const ideasCollection = collection(db, 'ideas');
+//   const q = query(ideasCollection, where('Titulo', '>=', criteria)); // Filtra por el criterio proporcionado
+//   const ideasSnapshot = await getDocs(q);
+//   return ideasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// };
+export const getPersonas = async () => {
+  const personasCollection = collection(db, 'personas');
+  const personasSnapshot = await getDocs(personasCollection);
+  return personasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 export const getNombreByEmail = async () => {
   const personasCollection = collection(db, 'personas')

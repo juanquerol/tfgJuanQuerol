@@ -1,15 +1,33 @@
 <template>
     <div class="user-dashboard">
-    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+      <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
       <div class="navbar-menu">
         <div class="navbar-start">
           <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
           <router-link class="navbar-item" to="/amigos">Amigos</router-link>
           <router-link class="navbar-item" to="/populares">Populares</router-link>
-          <router-link class="navbar-item" to="/myideas">Mis Ideas</router-link>
+          <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="field has-addons">
+              <div class="control">
+                <input class="input" type="text" placeholder="Buscar" v-model="searchValue">
+              </div>
+              <div class="control">
+                <button class="button is-info">
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="navbar-item">
+            <router-link class="button is-primary" to="/perfil">{{nombreUsuario}}</router-link>
+          </div>
         </div>
       </div>
     </nav>
+    
     <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
     <div v-if="selectedIdea" class="columns is-centered">
       <div class="column is-half">
@@ -69,12 +87,12 @@
         <div class="card">
           <div class="card-content">
             
-              <div class="content" v-if="idea.editing">
+              <div class="content" v-if="idea.editing" @click.stop="">
                   <!-- Formulario de edición -->
                   <div class="field">
       <label class="label">Título</label>
       <div class="control">
-        <input class="input" v-model="idea.Titulo" placeholder="Título">
+        <input class="input" v-model="idea.Titulo" placeholder="Título" >
       </div>
     </div>
     <div class="field">
@@ -86,10 +104,10 @@
                   <!-- Agrega más campos según sea necesario -->
                   <div class="field is-grouped">
       <div class="control">
-        <button class="button is-link" @click="saveIdea(idea)">Guardar</button>
+        <button class="button is-link" @click.stop="saveIdea(idea)">Guardar</button>
       </div>
       <div class="control">
-        <button class="button is-text" @click="cancelEdit(idea)">Cancelar</button>
+        <button class="button is-text" @click.stop="cancelEdit(idea)">Cancelar</button>
       </div>
     </div>
   </div>
@@ -102,8 +120,8 @@
               <p><strong>Forma:</strong> {{ idea.Forma }}</p>
               
               <p><strong>Propietario:</strong> {{ idea.Propietario}}</p>
-              <button class="button is-primary" @click="enableEdit(idea)">Editar</button>
-    <button class="button is-danger" @click="deleteIdeaUI(idea.id)">Eliminar</button>
+              <button class="button is-primary" @click.stop="enableEdit(idea)">Editar</button>
+    <button class="button is-danger" @click.stop="deleteIdeaUI(idea.id)">Eliminar</button>
                 </div>
               
               
@@ -121,12 +139,13 @@
 import { getIdeas , getMyIdeas, updateIdea, deleteIdea, cometariosIdea, crearComentario, getUUID, getNombreByEmail} from '@/main.js'
 import { format } from 'date-fns'
 
-
+      
 export default {
   name: 'UserDashboard',
   components: {
     
   },
+  
   
   setup() {
     const ideas = ref([])
@@ -138,6 +157,7 @@ export default {
       IdIdea: '',
       Persona: ''
     })
+    const nombreUsuario = ref('')
     const selectIdea = async (idea) => {
       selectedIdea.value = idea
       if (idea.id) {
@@ -179,9 +199,12 @@ const deleteIdeaUI = async (id) => {
   ideas.value = await getIdeas()
 }
     onMounted(async () => {
+
+      nombreUsuario.value = await getNombreByEmail()
       const data = await getMyIdeas()
   console.log(data)  // Agrega esta línea
   ideas.value = data
+
     })
 
     
@@ -199,7 +222,8 @@ const deleteIdeaUI = async (id) => {
       selectIdea,
       comentarios,
       agregarComentario,
-      nuevoComentario
+      nuevoComentario,
+      nombreUsuario
     }
   }
 }
@@ -218,9 +242,28 @@ const deleteIdeaUI = async (id) => {
   background-color: #f00;
   border-radius: 50%;
 }
-  .user-dashboard {
+  
+
+.user-dashboard {
   padding: 1rem;
   min-height: 100vh;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
+.navbar-start {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-end {
+  display: flex;
+  gap: 1rem;
 }
 
 .navbar-item {

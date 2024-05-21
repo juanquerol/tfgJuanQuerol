@@ -12,7 +12,7 @@
           <div class="navbar-item">
             <div class="field has-addons">
               <div class="control">
-                <input class="input" type="text" placeholder="Buscar">
+                <input class="input" type="text" placeholder="Buscar" v-model="searchValue">
               </div>
               <div class="control">
                 <button class="button is-info">
@@ -22,9 +22,7 @@
             </div>
           </div>
           <div class="navbar-item">
-            <figure class="image is-48x48">
-              <img class="is-rounded" src="url_de_la_imagen_de_perfil" alt="Imagen de perfil">
-            </figure>
+            <router-link class="button is-primary" to="/perfil">{{nombreUsuario1}}</router-link>
           </div>
         </div>
       </div>
@@ -36,7 +34,8 @@
       
     </div>
     <div v-else>
-      <div v-if="selectedIdea" class="columns is-centered">
+      <div v-if="searchValue.length <1">
+        <div v-if="selectedIdea" class="columns is-centered">
   <!-- Muestra la idea seleccionada -->
   <div class="column is-half">
     <div class="card">
@@ -110,6 +109,85 @@
       </div>
     </div>
     <button class="button is-primary" @click="showForm = true">crear idea</button>
+      </div>
+      <div v-else>
+        <div v-if="selectedIdea" class="columns is-centered">
+  <!-- Muestra la idea seleccionada -->
+  <div class="column is-half">
+    <div class="card">
+      <div class="card-content">
+        <div class="content">
+          <h2 class="title">{{ selectedIdea.Titulo }}</h2>
+          <p>{{ selectedIdea.Descripcion }}</p>
+          <p><strong>Categoría:</strong> {{ selectedIdea.Categoria }}</p>
+          <p><strong>Amigos:</strong> {{ selectedIdea.Amigos.join(', ') }}</p>
+
+          <button class="button is-info" @click="selectedIdea = null">Volver a la lista</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <header class="card-header">
+        <p class="card-header-title">
+          Comentarios
+        </p>
+      </header>
+      <div class="card-content">
+        <div class="content">
+          <div class="field" v-for="(comentario, index) in comentarios" :key="index">
+            <label class="label">{{ nuevoComentario.Persona }}</label>
+            <p>{{ comentario.Contenido }}</p>
+          </div>
+          <div>
+            <label class="label">Nuevo comentario</label>
+            <div class="field">
+              <div class="control">
+                <textarea class="textarea" v-model="nuevoComentario.Contenido" placeholder="Escribe un comentario"></textarea>
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <button class="button is-primary" @click="agregarComentario">Agregar comentario</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+      <div v-else class="columns is-multiline">
+        
+      <div class="column is-one-third" v-for="(idea, index) in searchResultsIdeas" :key="index" @click="selectIdea(idea)">
+        <div class="card">
+          <div class="card-content">
+            <div class="content">
+              <h2 class="title">{{ idea.Titulo }}</h2>
+              <div class="field">
+      
+              <div class="control description-container">
+                <p class="description-text" :class="{ 'is-clamped': isClamped }">{{ idea.Descripcion }}</p>
+                <button v-if="isClamped" class="button buttonMore is-info is-small" @click="isClamped = false">Saber más</button>
+              </div>
+            </div>
+              <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
+              <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
+              
+              <button class="button is-danger" :class="{ 'animate-like': isAnimating===idea.id }" @click.stop="addLike(idea)">
+                <span class="icon">
+                  <i class="fas fa-heart"></i> <!-- Icono de corazón -->
+                </span>
+                <span>{{ idea.Likes }}</span> <!-- Mostrar cantidad de likes -->
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      
+    <button class="button is-primary" @click="showForm = true">crear idea</button>
+    </div>
     </div>
     
     
@@ -118,8 +196,8 @@
   </template>
   
   <script>
- import { ref, onMounted } from 'vue'
-import { getIdeas, cometariosIdea, crearComentario, getUUID, getNombreByEmail,addLikeToIdea  } from '@/main.js'
+ import { ref, onMounted, watch } from 'vue'
+import { getIdeas, getPersonas, cometariosIdea, crearComentario, getUUID, getNombreByEmail,addLikeToIdea  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 
 export default {
@@ -135,6 +213,13 @@ export default {
     const isAnimating = ref(false); // Define isAnimating aquí
     const showForm = ref(false); // Nuevo estado para mostrar/ocultar el formulario
     let nombreUsuario = ref(''); // Define nombreUsuario aquí
+    const searchValue = ref(''); // Define searchValue aquí
+    const searchResultsIdeas = ref([]); // Resultados de búsqueda de ideas
+    
+    const searchResultsUsers = ref([]); // Resultados de búsqueda de nombres de usuario
+    const nombreUsuario1 = ref(''); // Define nombreUsuario aquí
+   
+    
     
     const fetchIdeas = async () => {
   ideas.value = await getIdeas()
@@ -143,7 +228,7 @@ export default {
 
 
 const selectIdea = async (idea) => {
-  selectedIdea.value = idea.id;
+  selectedIdea.value = idea;
   
   if (idea.id) {
     comentarios.value = await cometariosIdea(idea.id);
@@ -183,10 +268,35 @@ const addLike = async (idea) => {
 
     };
     onMounted(async () => {
+      nombreUsuario1.value = await getNombreByEmail()
       const data = await getIdeas()
   console.log(data)  // Agrega esta línea
   ideas.value = data
     })
+    const search = async () => {
+  const ideaFilter = await getIdeas();
+  const userFilter = await getPersonas(); // Agrega esta línea
+  searchResultsUsers.value = []; // Limpia los resultados de búsqueda existentes
+  searchResultsIdeas.value = []; // Limpia los resultados de búsqueda existentes
+  for (let i = 0; i < ideaFilter.length; i++) {
+    if (ideaFilter[i].Titulo.toLowerCase().includes(searchValue.value.toLowerCase())) {
+      searchResultsIdeas.value.push(ideaFilter[i]);
+    }
+  }
+  for (let i = 0; i < userFilter.length; i++) {
+    if (userFilter[i].Nombre.toLowerCase().includes(searchValue.value.toLowerCase())) {
+      searchResultsUsers.value.push(userFilter[i]);
+    }
+  }
+};
+
+  watch(searchValue, () => {
+      if (searchValue.value.length > 1) {
+        search();
+      } else {
+        searchResultsIdeas.value = [];
+      }
+    });
     
 
     return {
@@ -202,6 +312,11 @@ const addLike = async (idea) => {
       nombreUsuario,
       addLike,
       isClamped,
+      searchValue,
+      searchResultsIdeas,
+      nombreUsuario1,
+      searchResultsUsers,
+      search,
       
 
       
