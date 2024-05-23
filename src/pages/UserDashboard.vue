@@ -41,7 +41,16 @@
     <div class="card">
       <div class="card-content">
         <div class="content">
+          <div class="columns is-vcentered">
+            <div class="column is-narrow">
+              <p>{{ selectedIdea.Propietario }}</p>
+            </div>
+            <div class="column">
+              <p class="has-text-right">{{ formatDate(selectedIdea.Fecha) }}</p>
+            </div>
+          </div>
           <h2 class="title">{{ selectedIdea.Titulo }}</h2>
+
           <p>{{ selectedIdea.Descripcion }}</p>
           <p><strong>Categoría:</strong> {{ selectedIdea.Categoria }}</p>
           <p><strong>Amigos:</strong> {{ selectedIdea.Amigos.join(', ') }}</p>
@@ -50,6 +59,7 @@
         </div>
       </div>
     </div>
+
     <div class="card">
       <header class="card-header">
         <p class="card-header-title">
@@ -57,10 +67,13 @@
         </p>
       </header>
       <div class="card-content">
-        <div class="content">
-          <div class="field" v-for="(comentario, index) in comentarios" :key="index">
-            <label class="label">{{ nuevoComentario.Persona }}</label>
-            <p>{{ comentario.Contenido }}</p>
+        <div class="content ">
+          <div class="comentarios">
+            <div class="field comment-container" v-for="(comentario, index) in comentarios" :key="index">
+              <p class="comment-username">{{ comentario.Persona }}</p>
+              <p class="comment-content">{{ comentario.Contenido }}</p>
+              <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
+          </div>
           </div>
           <div>
             <label class="label">Nuevo comentario</label>
@@ -86,7 +99,15 @@
         <div class="card">
           <div class="card-content">
             <div class="content">
-              <h2 class="title">{{ idea.Titulo }}</h2>
+              <div class="columns is-vcentered">
+            <div class="column is-narrow">
+              <p>{{ idea.Propietario }}</p>
+            </div>
+            <div class="column">
+              <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
+            </div>
+          </div>
+          <h2 class="title">{{ idea.Titulo }}</h2>
               <div class="field">
       
               <div class="control description-container">
@@ -97,7 +118,7 @@
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
               
-              <button class="button is-danger" :class="{ 'animate-like': isAnimating===idea.id }" @click.stop="addLike(idea)">
+              <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(idea, index)">
                 <span class="icon">
                   <i class="fas fa-heart"></i> <!-- Icono de corazón -->
                 </span>
@@ -117,6 +138,14 @@
     <div class="card">
       <div class="card-content">
         <div class="content">
+          <div class="columns is-vcentered">
+            <div class="column is-narrow">
+              <p>{{ selectedIdea.Propietario }}</p>
+            </div>
+            <div class="column">
+              <p class="has-text-right">{{ formatDate(selectedIdea.Fecha) }}</p>
+            </div>
+          </div>
           <h2 class="title">{{ selectedIdea.Titulo }}</h2>
           <p>{{ selectedIdea.Descripcion }}</p>
           <p><strong>Categoría:</strong> {{ selectedIdea.Categoria }}</p>
@@ -133,11 +162,15 @@
         </p>
       </header>
       <div class="card-content">
-        <div class="content">
-          <div class="field" v-for="(comentario, index) in comentarios" :key="index">
-            <label class="label">{{ nuevoComentario.Persona }}</label>
-            <p>{{ comentario.Contenido }}</p>
+        <div class="content ">
+          <div class="comentarios">
+            <div class="field comment-container" v-for="(comentario, index) in comentarios" :key="index">
+              <p class="comment-username">{{ comentario.Persona }}</p>
+              <p class="comment-content">{{ comentario.Contenido }}</p>
+              <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
           </div>
+          </div>
+          
           <div>
             <label class="label">Nuevo comentario</label>
             <div class="field">
@@ -163,7 +196,15 @@
         <div class="card">
           <div class="card-content">
             <div class="content">
-              <h2 class="title">{{ idea.Titulo }}</h2>
+              <div class="columns is-vcentered">
+            <div class="column is-narrow">
+              <p>{{ idea.Propietario }}</p>
+            </div>
+            <div class="column">
+              <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
+            </div>
+          </div>
+          <h2 class="title">{{ idea.Titulo }}</h2>
               <div class="field">
       
               <div class="control description-container">
@@ -174,7 +215,7 @@
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
               
-              <button class="button is-danger" :class="{ 'animate-like': isAnimating===idea.id }" @click.stop="addLike(idea)">
+              <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(idea, index)">
                 <span class="icon">
                   <i class="fas fa-heart"></i> <!-- Icono de corazón -->
                 </span>
@@ -199,6 +240,12 @@
  import { ref, onMounted, watch } from 'vue'
 import { getIdeas, getPersonas, cometariosIdea, crearComentario, getUUID, getNombreByEmail,addLikeToIdea  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
+import anime from 'animejs/lib/anime.es.js';
+import { useRouter } from 'vue-router';
+import { format } from 'date-fns'
+
+import { gsap } from 'gsap/gsap-core';
+
 
 export default {
   name: 'UserDashboard',
@@ -206,6 +253,7 @@ export default {
     CrearIdea
   },
   setup() {
+    const router = useRouter();
     const ideas = ref([])
     const comentarios = ref([]);
     const isClamped = ref(true);
@@ -256,9 +304,20 @@ const agregarComentario = async () => {
     comentarios.value = await cometariosIdea(selectedIdea.value.id);
   }
 };
-const addLike = async (idea) => {
-      
+const formatDate = (timestamp) => {
+      const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
+      return format(date, 'dd/MM/yyyy'); // Formatea la fecha
+    };
+const addLike = async (idea, index) => {
   
+      gsap.to(`.like-button-${index}`, { scale: 1.5, duration: 0.3, yoyo: true });
+  anime({
+        targets: `.like-button-${index}`,
+        scale: [1, 1.5],
+        duration: 300,
+        easing: 'easeInOutQuad',
+        direction: 'alternate'
+      });
   isAnimating.value = true;
   await addLikeToIdea(idea.id); // Llamar a la función para actualizar el like en la base de datos
   fetchIdeas();
@@ -268,6 +327,10 @@ const addLike = async (idea) => {
 
     };
     onMounted(async () => {
+      const logeado = await getUUID()
+      if (!logeado) {
+        router.push('/')
+      }
       nombreUsuario1.value = await getNombreByEmail()
       const data = await getIdeas()
   console.log(data)  // Agrega esta línea
@@ -317,6 +380,7 @@ const addLike = async (idea) => {
       nombreUsuario1,
       searchResultsUsers,
       search,
+      formatDate,
       
 
       
@@ -391,6 +455,38 @@ const addLike = async (idea) => {
 .animate-like {
   animation: pulse 2s;
 }
+/* Estilo del contenedor del comentario */
+  .comment-container {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    
+  }
+
+  /* Estilo del nombre del usuario */
+  .comment-username {
+    font-weight: bold;
+    color: #333;
+  }
+
+  /* Estilo del contenido del comentario */
+  .comment-content {
+    margin-top: 5px;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  /* Estilo del tiempo del comentario */
+  .comment-time {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+  }
+  .comentarios {
+    max-height: 300px;
+    overflow-y: auto;
+  }
 
 @keyframes pulse {
   0% {

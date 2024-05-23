@@ -43,7 +43,7 @@
             <p><strong>Categoría:</strong> {{ selectedIdea.Categoria }}</p>
             <p><strong>Amigos:</strong> {{ selectedIdea.Amigos.join(', ') }}</p>
             <p><strong>Fecha:</strong> {{ formatDate(selectedIdea.Fecha) }}</p>
-            <p><strong>Forma:</strong> {{ selectedIdea.Forma }}</p>
+            
             <p><strong>Propietario:</strong> {{ selectedIdea.Propietario}}</p>
             <button class="button is-primary" @click="enableEdit(selectedIdea)">Editar</button>
             <button class="button is-danger" @click="deleteIdeaUI(selectedIdea.id)">Eliminar</button>
@@ -117,7 +117,7 @@
               <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
               <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
               <p><strong>Fecha:</strong> {{ formatDate(idea.Fecha) }}</p> <!-- Usa la función formatDate aquí -->
-              <p><strong>Forma:</strong> {{ idea.Forma }}</p>
+              
               
               <p><strong>Propietario:</strong> {{ idea.Propietario}}</p>
               <button class="button is-primary" @click.stop="enableEdit(idea)">Editar</button>

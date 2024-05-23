@@ -67,7 +67,14 @@ export const getPersonas = async () => {
   const personasSnapshot = await getDocs(personasCollection);
   return personasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+export const isAuthenticated = () => {
+  return auth.currentUser !== null;
+};
 export const getNombreByEmail = async () => {
+  if (!auth.currentUser) {
+    console.log('No hay usuario autenticado');
+    return '';
+  }
   const personasCollection = collection(db, 'personas')
   const q = query(personasCollection, where('Email', '==', auth.currentUser.email))
   const querySnapshot = await getDocs(q)

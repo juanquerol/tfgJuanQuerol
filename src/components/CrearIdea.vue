@@ -59,12 +59,7 @@
       </div>
       
       
-      <div class="field">
-        <label class="label" for="forma">Forma:</label>
-        <div class="control">
-          <input class="input" id="forma" v-model="idea.Forma">
-        </div>
-      </div>
+      
       <div class="field">
         <label class="label" for="publico">Público:</label>
         <div class="control">
@@ -106,7 +101,7 @@ export default {
       Categoria: '',
       Amigos: [''],
       Fecha: new Date(),
-      Forma: '',
+      
       Publico: false,
       Propietario: '',
       IdUsuario: '',
