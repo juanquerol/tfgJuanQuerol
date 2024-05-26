@@ -44,6 +44,7 @@
   
   import { loginUser } from '@/main';
   import { useRouter } from 'vue-router';
+  
 
 const router = useRouter();
 
@@ -59,6 +60,11 @@ const password = ref('')
 const login = async () => {
   try {
     await loginUser(email.value, password.value)
+    const sessionData = localStorage.getItem('sessionData');
+    if (sessionData) {
+      // Si hay datos de sesión, los carga en el estado de la aplicación
+      this.$store.commit('SET_SESSION_DATA', JSON.parse(sessionData));
+    }
     router.push('/dashboard')
   } catch (error) {
     console.log(error)

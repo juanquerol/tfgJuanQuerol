@@ -3,8 +3,7 @@
 
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-
-import { addUser, registerUser } from '@/main.js';
+import { addUser, registerUser,uploadImage } from '@/main.js';
 //import { inject } from 'vue';
 
 
@@ -12,14 +11,17 @@ export default {
   setup() {
     
     const router = useRouter();
+    //reader para leer la imagen
+// let fileInput = ref(null)
     const user = ref(
       {
         Email: '',
-        Contraseña: '',
+        Password: '',
         Nombre: '',
-        Cumpleaños: '',
+        Birthdate: '',
         Ciudad: '',
         Pais: '',
+        FotoPerfilURL: '' // Nuevo campo para la URL de la foto de perfil
       }
         
 
@@ -34,22 +36,40 @@ export default {
     }
 
 
+    //seleccionar una foto de perfil del dispositivo
+    const selectImage = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    user.value.FotoPerfilURL = file;
+    console.log(user.value.FotoPerfilURL);
+  }
+}
+      
+    
+
+
     const submitRegister = () => {
-      if (user.value.Contraseña.length < 6) {
+
+      if (user.value.Password.length < 6) {
         alert('La contraseña debe tener al menos 6 caracteres')
         return
       }
-      if (user.value.Contraseña !== rptpassword.value) {
+      if (user.value.Password !== rptpassword.value) {
         alert('Las contraseñas no coinciden')
         return
       }
       register()
     }
+    //subir foto de perfil
+    
+    
+      
+    
 
     const register = async () => {
   try {
-    await registerUser(user.value.Email, user.value.Contraseña)
-    
+    await registerUser(user.value.Email, user.value.Password)
+    user.value.FotoPerfilURL = await uploadImage( user.value.FotoPerfilURL)
     await addUser(user.value )
     router.push('/dashboard')
   } catch (error) {
@@ -67,7 +87,9 @@ export default {
       user,
       loginChange,
       submitRegister,
-      register
+      register,
+      selectImage
+      
     }
   }
 }
@@ -80,6 +102,16 @@ export default {
           <div class="box">
             <form @submit.prevent="submitRegister">
               <h3 class="title has-text-dark">Registrarse</h3>
+              <!-- foro de perfil -->
+              <div class="field">
+    <div class="control has-icons-left">
+      <input class="input is-large" type="file"  @change="selectImage($event)" placeholder="Foto de perfil">
+      <span class="icon is-small is-left">
+        <i class="fas fa-image"></i>
+      </span>
+    </div>
+  </div>
+              <!-- nombre -->
               <div class="field">
                 <div class="control has-icons-left">
                   <input class="input is-large" type="text" v-model="user.Nombre" placeholder="Nombre de usuario">
@@ -90,7 +122,7 @@ export default {
               </div>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="email" v-model="user.Email" placeholder="Correo electrónico">
+                  <input class="input is-large" type="email" v-model="user.Email" placeholder="Correo electrónico" autocomplete="username">
                   <span class="icon is-small is-left">
                     <i class="fas fa-envelope"></i>
                   </span>
@@ -98,7 +130,7 @@ export default {
               </div>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="password" v-model="user.Contraseña" placeholder="Contraseña">
+                  <input class="input is-large" type="password" v-model="user.Password" placeholder="Contraseña" autocomplete="current-password">
                   <span class="icon is-small is-left">
                     <i class="fas fa-lock"></i>
                   </span>
@@ -106,7 +138,7 @@ export default {
               </div>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="password" v-model="rptpassword" placeholder="Repetir Contraseña">
+                  <input class="input is-large" type="password" v-model="rptpassword" placeholder="Repetir Contraseña" autocomplete="current-password">
                   <span class="icon is-small is-left">
                     <i class="fas fa-lock"></i>
                   </span>
@@ -114,7 +146,7 @@ export default {
               </div>
               <div class="field">
                 <div class="control has-icons-left">
-                  <input class="input is-large" type="date" v-model="user.Cumpleaños" placeholder="Fecha de Cumpleaños">
+                  <input class="input is-large" type="date" v-model="user.Birthdate" placeholder="Fecha de Cumpleaños">
                   <span class="icon is-small is-left">
                     <i class="fas fa-calendar"></i>
                   </span>

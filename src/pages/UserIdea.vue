@@ -22,8 +22,18 @@
             </div>
           </div>
           <div class="navbar-item">
-            <router-link class="button is-primary" to="/perfil">{{nombreUsuario}}</router-link>
+            <div class="profile-container">
+      <!-- Foto de perfil -->
+      <div class="profile-image-container">
+        <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
+      </div>
+
+      <!-- Nombre de usuario -->
+      <router-link class="username" to="/perfil">{{ nombreUsuario }}</router-link>
+    </div>
           </div>
+          
+
         </div>
       </div>
     </nav>
@@ -136,7 +146,7 @@
   
   <script>
  import { ref, onMounted } from 'vue'
-import { getIdeas , getMyIdeas, updateIdea, deleteIdea, cometariosIdea, crearComentario, getUUID, getNombreByEmail} from '@/main.js'
+import { getIdeas , getMyIdeas, updateIdea, deleteIdea, cometariosIdea, crearComentario, getUUID, getNombreByEmail, getPersonaByEmail} from '@/main.js'
 import { format } from 'date-fns'
 
       
@@ -151,6 +161,8 @@ export default {
     const ideas = ref([])
     const selectedIdea = ref(null)
     const comentarios = ref([])
+    const FotoPerfil = ref(''); // Define nombreUsuario aquí
+    const usuario = ref(''); // Define nombreUsuario aquí
     const nuevoComentario = ref({
       Contenido: '',
       IdPersona: '',
@@ -199,6 +211,9 @@ const deleteIdeaUI = async (id) => {
   ideas.value = await getIdeas()
 }
     onMounted(async () => {
+      usuario.value = await getPersonaByEmail()
+      console.log(usuario.value)
+      FotoPerfil.value = usuario.value.FotoPerfilURL
 
       nombreUsuario.value = await getNombreByEmail()
       const data = await getMyIdeas()
@@ -223,47 +238,19 @@ const deleteIdeaUI = async (id) => {
       comentarios,
       agregarComentario,
       nuevoComentario,
-      nombreUsuario
+      nombreUsuario,
+      FotoPerfil,
+      usuario
     }
   }
 }
   </script>
   
   <style scoped>
-  .cuadrado {
-  width: 100px;
-  height: 100px;
-  background-color: #f00;
-}
-
-.circulo {
-  width: 100px;
-  height: 100px;
-  background-color: #f00;
-  border-radius: 50%;
-}
-  
-
-.user-dashboard {
+  .navbar {
+  background-color: #363636;
+  color: #fff;
   padding: 1rem;
-  min-height: 100vh;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-}
-
-.navbar-start {
-  display: flex;
-  gap: 1rem;
-}
-
-.navbar-end {
-  display: flex;
-  gap: 1rem;
 }
 
 .navbar-item {
@@ -272,5 +259,128 @@ const deleteIdeaUI = async (id) => {
 
 .navbar-item:hover {
   color: #00d1b2;
+}
+
+/* Estilos para las tarjetas de ideas */
+.card {
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+/* Estilos para los botones */
+.button {
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.button.is-info {
+  background-color: #00d1b2;
+}
+
+.button.is-info:hover {
+  background-color: #00b89c;
+}
+
+.button.is-primary {
+  background-color: #3273dc;
+}
+
+.button.is-primary:hover {
+  background-color: #276cda;
+}
+
+.button.is-danger {
+  background-color: #ff3860;
+}
+
+.button.is-danger:hover {
+  background-color: #e61e4d;
+}
+.comentarios {
+  height: 20rem;
+  overflow: scroll;
+}
+/* Estilos para los comentarios */
+.comment-container {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+}
+
+.comment-username {
+  font-weight: bold;
+  color: #333;
+  margin-left: 10px; /* Espacio entre la foto de perfil y el nombre de usuario */
+}
+
+.comment-content {
+  margin-top: 5px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 0px;
+  align-self: flex-start; /* Coloca la fecha en la esquina superior derecha */
+}
+
+.comment-likes {
+  position: absolute;
+  bottom: 5px; /* Alinea los likes en la esquina inferior */
+  right: 5px; /* Alinea los likes en la esquina derecha */
+}
+
+.like-button {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+/* Estilos para el contenedor de la foto de perfil y el nombre de usuario */
+.profile-container {
+  display: flex;
+  align-items: center;
+}
+
+.profile-image-container {
+  width: 40px; /* Ajusta el tamaño de la foto de perfil según sea necesario */
+  height: 40px; /* Ajusta el tamaño de la foto de perfil según sea necesario */
+  overflow: hidden;
+  border-radius: 50%; /* Recorta la foto de perfil en forma redonda */
+  margin-right: 10px; /* Ajusta el espacio entre la foto de perfil y el nombre de usuario */
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.username {
+  font-size: 14px;
 }
   </style>

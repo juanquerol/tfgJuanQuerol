@@ -22,7 +22,15 @@
             </div>
           </div>
           <div class="navbar-item">
-            <router-link class="button is-primary" to="/perfil">{{nombreUsuario1}}</router-link>
+            <div class="profile-container">
+      <!-- Foto de perfil -->
+      <div class="profile-image-container">
+        <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
+      </div>
+
+      <!-- Nombre de usuario -->
+      <router-link class="username" to="/perfil">{{ nombreUsuario1 }}</router-link>
+    </div>
           </div>
         </div>
       </div>
@@ -69,17 +77,34 @@
       <div class="card-content">
         <div class="content ">
           <div class="comentarios">
-            <div class="field comment-container" v-for="(comentario, index) in comentarios" :key="index">
-              <p class="comment-username">{{ comentario.Persona }}</p>
-              <p class="comment-content">{{ comentario.Contenido }}</p>
-              <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
-          </div>
-          </div>
+  <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
+    <!-- Foto de perfil y nombre de usuario -->
+    <div class="comment-header">
+      <div class="profile-image-container">
+        <img class="profile-image" :src="comentario.FotoUsuario" alt="Foto de perfil">
+      </div>
+      <p class="comment-username">{{ comentario.Nombre}}</p>
+    </div>
+    <!-- Contenido del comentario -->
+    <div class="comment-content">{{ comentario.Contenido }}</div>
+    <!-- Fecha del comentario -->
+    <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
+    <!-- Likes -->
+    <div class="comment-likes">
+      <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(comentario, index)">
+        <span class="icon">
+          <i class="fas fa-heart"></i>
+        </span>
+        <span>{{ comentario.Likes }}</span>
+      </button>
+    </div>
+  </div>
+</div>
           <div>
             <label class="label">Nuevo comentario</label>
             <div class="field">
               <div class="control">
-                <textarea class="textarea" v-model="nuevoComentario.Contenido" placeholder="Escribe un comentario"></textarea>
+                <textarea class="textarea" v-model="nuevoComentario.Contenido" @keyup.enter="agregarComentario" placeholder="Escribe un comentario"></textarea>
               </div>
             </div>
             <div class="field">
@@ -164,18 +189,35 @@
       <div class="card-content">
         <div class="content ">
           <div class="comentarios">
-            <div class="field comment-container" v-for="(comentario, index) in comentarios" :key="index">
-              <p class="comment-username">{{ comentario.Persona }}</p>
-              <p class="comment-content">{{ comentario.Contenido }}</p>
-              <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
-          </div>
-          </div>
+  <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
+    <!-- Foto de perfil y nombre de usuario -->
+    <div class="comment-header">
+      <div class="profile-image-container">
+        <img class="profile-image" :src="comentario.FotoUsuario" alt="Foto de perfil">
+      </div>
+      <p class="comment-username">{{ comentario.Nombre}}</p>
+    </div>
+    <!-- Contenido del comentario -->
+    <div class="comment-content">{{ comentario.Contenido }}</div>
+    <!-- Fecha del comentario -->
+    <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
+    <!-- Likes -->
+    <div class="comment-likes">
+      <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(comentario, index)">
+        <span class="icon">
+          <i class="fas fa-heart"></i>
+        </span>
+        <span>{{ comentario.Likes }}</span>
+      </button>
+    </div>
+  </div>
+</div>
           
           <div>
             <label class="label">Nuevo comentario</label>
             <div class="field">
               <div class="control">
-                <textarea class="textarea" v-model="nuevoComentario.Contenido" placeholder="Escribe un comentario"></textarea>
+                <textarea class="textarea" v-model="nuevoComentario.Contenido" @keyup.enter="agregarComentario" placeholder="Escribe un comentario"></textarea>
               </div>
             </div>
             <div class="field">
@@ -238,10 +280,12 @@
   
   <script>
  import { ref, onMounted, watch } from 'vue'
-import { getIdeas, getPersonas, cometariosIdea, crearComentario, getUUID, getNombreByEmail,addLikeToIdea  } from '@/main.js'
+import { getIdeas, getPersonaById, getPersonas, getPersonaByEmail,
+   cometariosIdea, crearComentario,
+    getNombreByEmail,addLikeToIdea  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 import anime from 'animejs/lib/anime.es.js';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import { format } from 'date-fns'
 
 import { gsap } from 'gsap/gsap-core';
@@ -253,11 +297,13 @@ export default {
     CrearIdea
   },
   setup() {
-    const router = useRouter();
-    const ideas = ref([])
+    // const router = useRouter();
+    const ideas = ref([]);
+    const personas = ref([]);
     const comentarios = ref([]);
     const isClamped = ref(true);
     const selectedIdea = ref(null);
+    const usuario = ref('');
     const isAnimating = ref(false); // Define isAnimating aquí
     const showForm = ref(false); // Nuevo estado para mostrar/ocultar el formulario
     let nombreUsuario = ref(''); // Define nombreUsuario aquí
@@ -266,6 +312,7 @@ export default {
     
     const searchResultsUsers = ref([]); // Resultados de búsqueda de nombres de usuario
     const nombreUsuario1 = ref(''); // Define nombreUsuario aquí
+    const FotoPerfil = ref(''); // Define nombreUsuario aquí
    
     
     
@@ -287,21 +334,28 @@ const nuevoComentario = ref({
   Contenido: '',
   IdPersona: '',
   IdIdea: '',
-  Persona: ''
+  Persona: '',
+  Fecha: new Date(),
+  nombreUsuario: '',
+  fotoUsuario: '',
+
 });
 
 const agregarComentario = async () => {
   if (selectedIdea.value && selectedIdea.value.id) {
     // Obtén idPersona antes de llamar a crearComentario
-    nuevoComentario.value.IdPersona = await getUUID();
+    nuevoComentario.value.IdPersona = usuario.value.id;
     
     // Obtén nombreUsuario antes de llamar a crearComentario
     nombreUsuario = await getNombreByEmail();
+    
     nuevoComentario.value.Persona = nombreUsuario;
+    
 
-    await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona); 
+    await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona, FotoPerfil.value); 
 
     comentarios.value = await cometariosIdea(selectedIdea.value.id);
+    
   }
 };
 const formatDate = (timestamp) => {
@@ -326,16 +380,44 @@ const addLike = async (idea, index) => {
   }, 2000);
 
     };
+    //foto de perfil
+    
     onMounted(async () => {
-      const logeado = await getUUID()
-      if (!logeado) {
-        router.push('/')
-      }
+      // try {
+//   let uuid = getUUID()
+//   if (uuid === null || uuid.uid === null) {
+//     router.push('/')
+//   }
+// } catch (error) {
+//   console.error(error)
+//   router.push('/')
+// }
+if (showForm.value ==false) {
+  const data = await getIdeas()
+  console.log(data)  // Agrega esta línea
+  ideas.value = data
+    
+}
+      usuario.value = await getPersonaByEmail()
+      console.log(usuario.value)
+      FotoPerfil.value = usuario.value.FotoPerfilURL
       nombreUsuario1.value = await getNombreByEmail()
+      
       const data = await getIdeas()
   console.log(data)  // Agrega esta línea
   ideas.value = data
     })
+    const getName = async (id) => {
+      
+  personas.value = await getPersonaById(id);
+  if (personas.value) {
+    return personas.value.Nombre;
+  } else {
+    return 'Nombre no encontrado';
+  }
+
+      
+    };
     const search = async () => {
   const ideaFilter = await getIdeas();
   const userFilter = await getPersonas(); // Agrega esta línea
@@ -381,6 +463,9 @@ const addLike = async (idea, index) => {
       searchResultsUsers,
       search,
       formatDate,
+      getName,
+      FotoPerfil,
+
       
 
       
@@ -392,38 +477,10 @@ const addLike = async (idea, index) => {
   </script>
   
   <style scoped>
-  .cuadrado {
-  width: 100px;
-  height: 100px;
-  background-color: #f00;
-}
-
-.circulo {
-  width: 100px;
-  height: 100px;
-  background-color: #f00;
-  border-radius: 50%;
-}
-  .user-dashboard {
+  .navbar {
+  background-color: #363636;
+  color: #fff;
   padding: 1rem;
-  min-height: 100vh;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-}
-
-.navbar-start {
-  display: flex;
-  gap: 1rem;
-}
-
-.navbar-end {
-  display: flex;
-  gap: 1rem;
 }
 
 .navbar-item {
@@ -433,70 +490,128 @@ const addLike = async (idea, index) => {
 .navbar-item:hover {
   color: #00d1b2;
 }
-.description-container {
+
+/* Estilos para las tarjetas de ideas */
+.card {
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+/* Estilos para los botones */
+.button {
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.button.is-info {
+  background-color: #00d1b2;
+}
+
+.button.is-info:hover {
+  background-color: #00b89c;
+}
+
+.button.is-primary {
+  background-color: #3273dc;
+}
+
+.button.is-primary:hover {
+  background-color: #276cda;
+}
+
+.button.is-danger {
+  background-color: #ff3860;
+}
+
+.button.is-danger:hover {
+  background-color: #e61e4d;
+}
+.comentarios {
+  height: 20rem;
+  overflow: scroll;
+}
+/* Estilos para los comentarios */
+.comment-container {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  max-height: 3.6em; /* Altura para dos líneas de texto */
-  overflow: hidden;
 }
 
-.description-text.is-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.comment-header {
+  display: flex;
+  align-items: center;
 }
 
-.buttonMore {
+.comment-username {
+  font-weight: bold;
+  color: #333;
+  margin-left: 10px; /* Espacio entre la foto de perfil y el nombre de usuario */
+}
+
+.comment-content {
+  margin-top: 5px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 0px;
+  align-self: flex-start; /* Coloca la fecha en la esquina superior derecha */
+}
+
+.comment-likes {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 5px; /* Alinea los likes en la esquina inferior */
+  right: 5px; /* Alinea los likes en la esquina derecha */
 }
-.animate-like {
-  animation: pulse 2s;
+
+.like-button {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s;
 }
-/* Estilo del contenedor del comentario */
-  .comment-container {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    
-  }
-
-  /* Estilo del nombre del usuario */
-  .comment-username {
-    font-weight: bold;
-    color: #333;
-  }
-
-  /* Estilo del contenido del comentario */
-  .comment-content {
-    margin-top: 5px;
-    font-size: 16px;
-    line-height: 1.4;
-  }
-
-  /* Estilo del tiempo del comentario */
-  .comment-time {
-    font-size: 12px;
-    color: #999;
-    margin-top: 5px;
-  }
-  .comentarios {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+/* Estilos para el contenedor de la foto de perfil y el nombre de usuario */
+.profile-container {
+  display: flex;
+  align-items: center;
 }
+
+.profile-image-container {
+  width: 40px; /* Ajusta el tamaño de la foto de perfil según sea necesario */
+  height: 40px; /* Ajusta el tamaño de la foto de perfil según sea necesario */
+  overflow: hidden;
+  border-radius: 50%; /* Recorta la foto de perfil en forma redonda */
+  margin-right: 10px; /* Ajusta el espacio entre la foto de perfil y el nombre de usuario */
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.username {
+  font-size: 14px;
+}
+
   </style>

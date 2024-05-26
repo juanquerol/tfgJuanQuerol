@@ -2,9 +2,10 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router.js'
 import { initializeApp } from 'firebase/app';
-import { getAuth , createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth ,setPersistence,browserLocalPersistence , onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 //firestore
 import { getFirestore, collection, getDocs, addDoc, query, where, updateDoc, onSnapshot, deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
+import { ref,getDownloadURL, getStorage, uploadBytes } from 'firebase/storage';
 import 'bulma/css/bulma.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 
@@ -28,6 +29,7 @@ const firebaseConfig = {
   
 
 const app = createApp(App);
+
 const listenToIdeas = () => {
   const ideasCollection = collection(db, 'ideas');
   onSnapshot(ideasCollection, (snapshot) => {
@@ -42,9 +44,76 @@ const listenToIdeas = () => {
 
 app.use(router)
 app.use(auth)
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('La persistencia de la sesión está configurada para el almacenamiento local del navegador.');
+  })
+  .catch((error) => {
+    console.error('Error al configurar la persistencia de la sesión:', error);
+  });
+const userFromLocalStorage = localStorage.getItem('user');
+if (userFromLocalStorage) {
+  const user = JSON.parse(userFromLocalStorage);
+  app.config.globalProperties.$currentUser = user;
+}
+
+// Escucha los cambios en el estado de autenticación
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Usuario autenticado, guarda la información del usuario en el almacenamiento local
+    localStorage.setItem('user', JSON.stringify(user));
+    app.config.globalProperties.$currentUser = user;
+  } else {
+    // Usuario no autenticado, elimina la información del usuario del almacenamiento local
+    localStorage.removeItem('user');
+    app.config.globalProperties.$currentUser = null;
+  }
+});
 app.use(firebaseApp)
 app.mount('#app')
 
+const storage = getStorage(firebaseApp);
+
+// Función para subir una imagen al almacenamiento de Firebase
+export const uploadImage = async (file) => {
+  console.log(file)
+  try {
+    const storageRef = ref(storage, `profile_images/${file.name}`); // Referencia al lugar donde se almacenará la imagen
+    await uploadBytes(storageRef, file); // Subir la imagen al almacenamiento
+    const downloadURL = await getDownloadURL(storageRef); // Obtener la URL de descarga de la imagen
+    return downloadURL;
+  } catch (error) {
+    throw new Error('Error al subir la imagen: ' + error.message);
+  }
+};
+//obtener la imagen de perfil por el email
+export const getProfileImage = async () => {
+  if (!auth.currentUser) {
+    console.log('No hay usuario autenticado');
+    return null;
+  }
+
+  const personasCollection = collection(db, 'personas');
+  const q = query(personasCollection, where('Email', '==', auth.currentUser.email));
+  const querySnapshot = await getDocs(q);
+
+  let foto = '';
+  querySnapshot.forEach((doc) => {
+    foto = doc.data().FotoPerfilURL;
+  });
+
+  return foto;
+};
+// export const getProfileImage = async () => {
+//   const auth = getAuth();
+//   if (!auth.currentUser) {
+//     throw new Error('No hay usuario autenticado');
+//   }
+
+//   const storageRef = ref(storage, `profile_images/${auth.currentUser.uid}`); // Ruta de almacenamiento de la imagen de perfil
+//   const url = await getDownloadURL(storageRef); // Obtiene la URL de descarga de la imagen
+//   return url;
+// };
 
 export const registerUser = (email, password) => {
   return createUserWithEmailAndPassword(auth, email, password);
@@ -67,14 +136,65 @@ export const getPersonas = async () => {
   const personasSnapshot = await getDocs(personasCollection);
   return personasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+export const getPersonaByEmail = async () => {if (!auth.currentUser) {
+  console.log('No hay usuario autenticado');
+  return null;
+}
+
+
+
+const personasCollection = collection(db, 'personas')
+const q = query(personasCollection, where('Email', '==', auth.currentUser.email))
+const querySnapshot = await getDocs(q)
+
+let persona = null;
+querySnapshot.forEach((doc) => {
+  persona = { id: doc.id, ...doc.data() };
+});
+
+return persona;
+  
+  
+}
+//Actualizar mi perfil
+export const updateProfile = async (personaId, personaData) => {
+  const personaRef = doc(db, 'personas', personaId);
+  await updateDoc(personaRef, personaData);
+};
+
+
+//conseguir los datos de una persona por su id
+export const getPersonaById = async (id) => {
+  const personaDoc = doc(db, 'personas', id);
+  const personaSnapshot = await getDoc(personaDoc);
+  if (personaSnapshot.exists()) {
+    return { id: personaSnapshot.id, ...personaSnapshot.data() };
+  } else {
+    console.log('No such document!');
+  }
+};
 export const isAuthenticated = () => {
   return auth.currentUser !== null;
 };
+export const getNameById = async (id) => {
+  // sacar el nombre de un usuario por su id dado en un comentario
+  const personasCollection = collection(db, 'personas');
+
+  const q = query(personasCollection, where('Id', '==', id));
+  const querySnapshot = await getDocs(q);
+  let nombre = '';
+  querySnapshot.forEach((doc) => {
+    nombre = doc.data().Nombre
+  })
+  return nombre
+
+}
 export const getNombreByEmail = async () => {
   if (!auth.currentUser) {
     console.log('No hay usuario autenticado');
     return '';
   }
+
   const personasCollection = collection(db, 'personas')
   const q = query(personasCollection, where('Email', '==', auth.currentUser.email))
   const querySnapshot = await getDocs(q)
@@ -159,12 +279,13 @@ export const addIdea = async (idea) => {
         Fecha: new Date(),
         IdPersona: auth.currentUser.uid,
         Likes: 0,
-        Responder: 'wJjLgWcd3QNY0AdSEdIo'
+        Nombre: await getNombreByEmail(),
+        FotoUsuario: await getProfileImage()
   });
 
   return ideaDocRef;
 };
-export const crearComentario = async (ideaId, contenido, idPersona, responder) => {
+export const crearComentario = async (ideaId, contenido, idPersona, Nombre, fotoUsuario) => {
   if (typeof ideaId !== 'string') {
     throw new Error('ideaId debe ser una cadena');
   }
@@ -176,17 +297,18 @@ export const crearComentario = async (ideaId, contenido, idPersona, responder) =
   }
 
   // Comprueba si responder es undefined
-  if (responder === undefined) {
+  if (Nombre === undefined) {
     // Si responder es undefined, asigna un valor por defecto
-    responder = 'Valor por defecto'; // Reemplaza 'Valor por defecto' con el valor que desees
+    Nombre = 'Valor por defecto'; // Reemplaza 'Valor por defecto' con el valor que desees
   }
 
   const comentario = {
     Contenido: contenido,
     Fecha: new Date(),
     IdPersona: idPersona,
+    Nombre: Nombre,
     Likes: 0,
-    Responder: responder
+    FotoUsuario: fotoUsuario
   };
 
   const comentariosCollection = collection(db, 'ideas', ideaId, 'comentarios');

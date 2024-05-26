@@ -129,7 +129,7 @@ export default {
       await addIdea(idea.value)
       await fetchIdeas()  // Refresca las ideas después de añadir la nueva idea
       emit('idea-creada'); // Emite el evento
-      location.reload();
+      
     }
 
     onMounted(fetchIdeas)
