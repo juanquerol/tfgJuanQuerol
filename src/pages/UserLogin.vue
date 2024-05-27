@@ -29,7 +29,7 @@
       </form>
       <p class="has-text-grey">
             <a @click="goToAbout()">Registrarse</a> &nbsp;·&nbsp;
-            <a href="/forgot-password">¿Olvidaste tu contraseña?</a>
+            <a href="/forgetpassword">¿Olvidaste tu contraseña?</a>
           </p>
     </div>
           

@@ -78,7 +78,7 @@
                 </div>
               </div>
               <div class="buttons">
-            <button class="button is-danger" @click="logout">Logout</button>
+            <button class="button is-danger" @click="logoutFunction">Logout</button>
             <button class="button is-primary" @click="showForm = false">cancelar</button>
           </div>
             </form>
@@ -93,7 +93,7 @@
 
           <!-- Botones de logout y editar perfil -->
           <div class="buttons">
-            <button class="button is-danger" @click="logout">Logout</button>
+            <button class="button is-danger" @click="logoutFunction">Logout</button>
             <button class="button is-primary" @click="showForm = true">Editar perfil</button>
           </div>
             </div>
@@ -106,7 +106,7 @@
 <script>
 import { onMounted , ref} from 'vue';
 import { useRouter } from 'vue-router';
-import { getNombreByEmail, updateProfile, getPersonaByEmail} from '@/main';
+import { getNombreByEmail, updateProfile, getPersonaByEmail, logout} from '@/main';
 
 export default {
   name: 'UserPerfil',
@@ -125,6 +125,12 @@ export default {
         Pais: '',
         FotoPerfilURL: ''
         // Agrega más campos según sea necesario
+    }
+    //logout
+    const logoutFunction = async() => {
+      localStorage.removeItem('user')
+      await logout()
+      router.push('/')
     }
     
 
@@ -153,7 +159,8 @@ export default {
       updatePerfil,
       nombreUsuario1,
       showForm,
-      persona
+      persona,
+      logoutFunction
      }
 
   }

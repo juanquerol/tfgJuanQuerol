@@ -6,6 +6,7 @@ import Register from './pages/UserRegister.vue'
 import Dashboard from './pages/UserDashboard.vue'
 import MyIdeas from './pages/UserIdea.vue'
 import UserPerfil from './pages/UserPerfil.vue'
+import UserForget from './pages/UserForget.vue'
 
 
 const routes = [
@@ -33,6 +34,12 @@ const routes = [
       path: '/perfil',
       name:'perfil',
       component: UserPerfil
+    },
+    {
+      path: '/forgetpassword',
+      name:'ForgetPassword',
+      component: UserForget
+
     }
 
   

@@ -233,7 +233,7 @@
   </div>
 </div>
       <div v-else class="columns is-multiline">
-        
+        <h1>Ideas</h1>
       <div class="column is-one-third" v-for="(idea, index) in searchResultsIdeas" :key="index" @click="selectIdea(idea)">
         <div class="card">
           <div class="card-content">
@@ -266,6 +266,31 @@
             </div>
           </div>
         </div>
+      </div>
+      <div class="column is-one-fifth" v-for="(persona, index) in searchResultsUsers" :key="index" @click="selectIdea(idea)">
+        <div class="card persona" >
+    <div class="card-image persona">
+      <figure class="image is-4by3" v-if="persona.FotoPerfilURL || persona.FotoPerfilURL>=1">
+        <img :src="persona.FotoPerfilURL" alt="Foto de perfil">
+      </figure>
+      <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
+      <div class="image is-4by3" v-else :style="{ backgroundColor: randomColor() }">
+    <p class="title is-1 has-text-white has-text-centered">{{ persona.Nombre.substring(0, 2) }}</p>
+  </div>
+    </div>
+    <div class="card-content persona" >
+      <div class="media">
+        <div class="media-content">
+          <p class="title is-4">{{ persona.Nombre }}</p>
+          <p class="subtitle is-6">{{ persona.Correo }}</p>
+        </div>
+      </div>
+
+      <div class="content">
+        Ciudad: {{ persona.Ciudad }}
+      </div>
+    </div>
+  </div>
       </div>
       </div>
       
@@ -329,7 +354,10 @@ const selectIdea = async (idea) => {
     comentarios.value = await cometariosIdea(idea.id);
   }
 };
-
+const randomColor = () => {
+  const randomColor = Math.floor(Math.random()*16777215).toString(16);
+  return `#${randomColor}`;
+};
 const nuevoComentario = ref({
   Contenido: '',
   IdPersona: '',
@@ -465,6 +493,7 @@ if (showForm.value ==false) {
       formatDate,
       getName,
       FotoPerfil,
+      randomColor,
 
       
 
@@ -612,6 +641,19 @@ if (showForm.value ==false) {
 
 .username {
   font-size: 14px;
+}
+.card.persona{
+  max-width: 300px;
+  margin: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-image.persona img {
+  object-fit: cover;
+}
+
+.card-content.persona {
+  padding: 1.5rem;
 }
 
   </style>

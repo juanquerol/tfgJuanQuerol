@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router.js'
 import { initializeApp } from 'firebase/app';
-import { getAuth ,setPersistence,browserLocalPersistence , onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth ,setPersistence,browserLocalPersistence , sendPasswordResetEmail, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 //firestore
 import { getFirestore, collection, getDocs, addDoc, query, where, updateDoc, onSnapshot, deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref,getDownloadURL, getStorage, uploadBytes } from 'firebase/storage';
@@ -104,6 +104,10 @@ export const getProfileImage = async () => {
 
   return foto;
 };
+//logout
+export const logout = () => {
+  return auth.signOut();
+}
 // export const getProfileImage = async () => {
 //   const auth = getAuth();
 //   if (!auth.currentUser) {
@@ -118,6 +122,10 @@ export const getProfileImage = async () => {
 export const registerUser = (email, password) => {
   return createUserWithEmailAndPassword(auth, email, password);
 };
+// he olvidado mi contraseña
+export const forgetPassword = (email) => {
+  return sendPasswordResetEmail(auth, email);
+}
 export const addUser = async (persona) => {
   const ideasCollection = collection(db, 'personas');
   return await addDoc(ideasCollection, persona);

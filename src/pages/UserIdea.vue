@@ -94,6 +94,11 @@
     <div v-else class="columns is-multiline">
       <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index" @click="selectIdea(idea)">
         
+      <div v-if="ideas.length<1" class="notification is-warning">
+        No hay ideas disponibles
+
+
+      </div>
         <div class="card">
           <div class="card-content">
             
@@ -213,6 +218,7 @@ const deleteIdeaUI = async (id) => {
     onMounted(async () => {
       usuario.value = await getPersonaByEmail()
       console.log(usuario.value)
+      
       FotoPerfil.value = usuario.value.FotoPerfilURL
 
       nombreUsuario.value = await getNombreByEmail()
