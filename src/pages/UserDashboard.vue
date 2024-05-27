@@ -1,5 +1,6 @@
 <template>
-    <div class="user-dashboard">
+    <div class="user-dashboard" v-bind:class="{ 'dark-mode': isDarkMode }">
+      
       <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
       <div class="navbar-menu">
         <div class="navbar-start">
@@ -24,10 +25,13 @@
           <div class="navbar-item">
             <div class="profile-container">
       <!-- Foto de perfil -->
-      <div class="profile-image-container">
+      <div class="profile-image-container" v-if="FotoPerfil || FotoPerfil>=1">
         <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
       </div>
-
+      <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
+      <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
+    <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+  </div>
       <!-- Nombre de usuario -->
       <router-link class="username" to="/perfil">{{ nombreUsuario1 }}</router-link>
     </div>
@@ -80,9 +84,12 @@
   <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
     <!-- Foto de perfil y nombre de usuario -->
     <div class="comment-header">
-      <div class="profile-image-container">
+      <div class="profile-image-container" v-if="comentario.FotoUsuario || comentario.FotoUsuario.length>=1">
         <img class="profile-image" :src="comentario.FotoUsuario" alt="Foto de perfil">
       </div>
+      <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
+    <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+  </div>
       <p class="comment-username">{{ comentario.Nombre}}</p>
     </div>
     <!-- Contenido del comentario -->
@@ -192,9 +199,12 @@
   <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
     <!-- Foto de perfil y nombre de usuario -->
     <div class="comment-header">
-      <div class="profile-image-container">
+      <div class="profile-image-container" v-if="comentario.FotoUsuario || comentario.FotoUsuario.length>=1">
         <img class="profile-image" :src="comentario.FotoUsuario" alt="Foto de perfil">
       </div>
+      <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
+    <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+  </div>
       <p class="comment-username">{{ comentario.Nombre}}</p>
     </div>
     <!-- Contenido del comentario -->
@@ -282,7 +292,7 @@
       <div class="media">
         <div class="media-content">
           <p class="title is-4">{{ persona.Nombre }}</p>
-          <p class="subtitle is-6">{{ persona.Correo }}</p>
+          <p class="subtitle is-6">{{ persona.Email }}</p>
         </div>
       </div>
 
@@ -296,6 +306,7 @@
       
     <button class="button is-primary" @click="showForm = true">crear idea</button>
     </div>
+  
     </div>
     
     
@@ -411,6 +422,9 @@ const addLike = async (idea, index) => {
     //foto de perfil
     
     onMounted(async () => {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.darkMode = true;
+    }
       // try {
 //   let uuid = getUUID()
 //   if (uuid === null || uuid.uid === null) {
@@ -654,6 +668,20 @@ if (showForm.value ==false) {
 
 .card-content.persona {
   padding: 1.5rem;
+}
+.dark-mode {
+    background-color: #333;
+    color: #fff;
+}
+
+.dark-mode button {
+    background-color: #444;
+    color: #fff;
+}
+
+.dark-mode .card {
+    background-color: #444;
+    color: #fff;
 }
 
   </style>
