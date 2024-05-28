@@ -7,6 +7,7 @@ import Dashboard from './pages/UserDashboard.vue'
 import MyIdeas from './pages/UserIdea.vue'
 import UserPerfil from './pages/UserPerfil.vue'
 import UserForget from './pages/UserForget.vue'
+import UserPage from './pages/UserPage.vue'
 
 
 const routes = [
@@ -39,6 +40,12 @@ const routes = [
       path: '/forgetpassword',
       name:'ForgetPassword',
       component: UserForget
+
+    },
+    {
+      path: '/user-page/:email',
+      name:'UserPage',
+      component: UserPage
 
     }
 

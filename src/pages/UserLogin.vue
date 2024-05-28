@@ -25,6 +25,8 @@
             </span>
           </div>
         </div>
+<!-- login auth google con bulma -->
+        <button class="button is-block is-light is-large is-fullwidth" @click="googleLogin">Iniciar sesión con Google</button>
         <button class="button is-block is-light is-large is-fullwidth">Iniciar sesión</button>
       </form>
       <p class="has-text-grey">
@@ -44,6 +46,7 @@
   
   import { loginUser } from '@/main';
   import { useRouter } from 'vue-router';
+  import { loginGoogle } from '@/main';
   
 
 const router = useRouter();
@@ -52,7 +55,18 @@ function goToAbout() {
   router.push('/register');
 }
     
+//auth google
+const googleLogin = async () => {
+  try {
+    await loginGoogle()
+    //Después de iniciar sesión con Google, redirige al usuario a la página de inicio
 
+    
+    router.push('/dashboard')
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 const email = ref('')
 const password = ref('')

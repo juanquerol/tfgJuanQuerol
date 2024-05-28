@@ -2,9 +2,10 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router.js'
 import { initializeApp } from 'firebase/app';
-import { getAuth ,setPersistence,browserLocalPersistence , sendPasswordResetEmail, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+
+import { GoogleAuthProvider, signInWithPopup, getAuth ,setPersistence,browserLocalPersistence , sendPasswordResetEmail, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, } from 'firebase/auth';
 //firestore
-import { getFirestore, collection, getDocs, addDoc, query, where, updateDoc, onSnapshot, deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc, query, where, updateDoc, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { ref,getDownloadURL, getStorage, uploadBytes } from 'firebase/storage';
 import 'bulma/css/bulma.css'
 import '@fortawesome/fontawesome-free/css/all.css'
@@ -139,12 +140,16 @@ export const getUUID= async () => {
 //   const ideasSnapshot = await getDocs(q);
 //   return ideasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 // };
+//conseguir todas las personas
 export const getPersonas = async () => {
   const personasCollection = collection(db, 'personas');
   const personasSnapshot = await getDocs(personasCollection);
   return personasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
-export const getPersonaByEmail = async () => {if (!auth.currentUser) {
+
+//conseguir los datos de ti mismo
+export const getPersonaByEmail = async () => {
+  if (!auth.currentUser) {
   console.log('No hay usuario autenticado');
   return null;
 }
@@ -164,10 +169,29 @@ return persona;
   
   
 }
+//conseguir los datos de otra persona que soy yo por su email
+export const getOtraPersonaByemail = async (email) => {
+  const personasCollection = collection(db, 'personas')
+  console.log(email)
+const q = query(personasCollection, where('Email', '==', email))
+const querySnapshot = await getDocs(q)
+
+let persona = null;
+querySnapshot.forEach((doc) => {
+  persona = { id: doc.id, ...doc.data() };
+});
+
+return persona;
+}
 //Actualizar mi perfil
 export const updateProfile = async (personaId, personaData) => {
   const personaRef = doc(db, 'personas', personaId);
   await updateDoc(personaRef, personaData);
+};
+//login google
+export const loginGoogle = () => {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
 };
 
 
@@ -234,6 +258,28 @@ export const getMyIdeas = async () => {
   const ideasSnapshot = await getDocs(q);
   return ideasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+export const getPersonIdeas = async (email) => {
+  // Asegúrate de que hay un usuario autenticado
+  if (!auth.currentUser) {
+    console.log('No hay usuario autenticado');
+    return [];
+  }
+
+   // Obtiene el UUID del usuario actual
+  const ideasCollection = collection(db, 'ideas');
+  const q = query(ideasCollection, where('EmailUsuario', '==', email)); // Filtra por idUsuario
+  const ideasSnapshot = await getDocs(q);
+  return ideasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+export const getEmail = async () => {
+  if (!auth.currentUser) {
+    console.log('No hay usuario autenticado');
+    return '';
+  }
+
+  return auth.currentUser.email;
+}
+
 
 
 export async function updateIdea(ideaId, ideaData) {
@@ -281,15 +327,15 @@ export const addIdea = async (idea) => {
   const ideaDocRef = await addDoc(ideasCollection, idea);
 
   // Crea una subcolección 'comentarios' en el documento de la idea
-  const comentariosCollection = collection(ideaDocRef, 'comentarios');
-  await setDoc(doc(comentariosCollection, 'comentario1'), {
-    Contenido: '¡Bienvenido a esta idea!',
-        Fecha: new Date(),
-        IdPersona: auth.currentUser.uid,
-        Likes: 0,
-        Nombre: await getNombreByEmail(),
-        FotoUsuario: await getProfileImage()
-  });
+  // const comentariosCollection = collection(ideaDocRef, 'comentarios');
+  // await setDoc(doc(comentariosCollection, 'comentario1'), {
+  //   Contenido: '¡Bienvenido a esta idea!',
+  //       Fecha: new Date(),
+  //       IdPersona: auth.currentUser.uid,
+  //       Likes: 0,
+  //       Nombre: await getNombreByEmail(),
+  //       FotoUsuario: await getProfileImage()
+  // });
 
   return ideaDocRef;
 };

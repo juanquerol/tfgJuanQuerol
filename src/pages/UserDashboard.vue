@@ -203,7 +203,7 @@
         <img class="profile-image" :src="comentario.FotoUsuario" alt="Foto de perfil">
       </div>
       <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
-    <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+    <p class="title is-1 has-text-white has-text-centered">{{ comentario.Nombre.substring(0, 2) }}</p>
   </div>
       <p class="comment-username">{{ comentario.Nombre}}</p>
     </div>
@@ -277,7 +277,8 @@
           </div>
         </div>
       </div>
-      <div class="column is-one-fifth" v-for="(persona, index) in searchResultsUsers" :key="index" @click="selectIdea(idea)">
+      
+      <div class="column is-one-fifth" v-for="(persona, index) in searchResultsUsers" :key="index" @click="pageUser(persona.Email)"  >
         <div class="card persona" >
     <div class="card-image persona">
       <figure class="image is-4by3" v-if="persona.FotoPerfilURL || persona.FotoPerfilURL>=1">
@@ -291,7 +292,7 @@
     <div class="card-content persona" >
       <div class="media">
         <div class="media-content">
-          <p class="title is-4">{{ persona.Nombre }}</p>
+          <p class="subtitle is-4">{{ persona.Nombre }}</p>
           <p class="subtitle is-6">{{ persona.Email }}</p>
         </div>
       </div>
@@ -316,6 +317,7 @@
   
   <script>
  import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { getIdeas, getPersonaById, getPersonas, getPersonaByEmail,
    cometariosIdea, crearComentario,
     getNombreByEmail,addLikeToIdea  } from '@/main.js'
@@ -333,7 +335,7 @@ export default {
     CrearIdea
   },
   setup() {
-    // const router = useRouter();
+    const router = useRouter();
     const ideas = ref([]);
     const personas = ref([]);
     const comentarios = ref([]);
@@ -356,7 +358,13 @@ export default {
   ideas.value = await getIdeas()
 }
 
+const pageUser = async (emailPersona) => {
+  console.log(emailPersona);
+  //al hacer click a un usuario se redirige a la pagin UserPage.vue con el email del usuario
+  router.push({ name: 'UserPage', params: { email: emailPersona } });
 
+
+}
 
 const selectIdea = async (idea) => {
   selectedIdea.value = idea;
@@ -508,6 +516,7 @@ if (showForm.value ==false) {
       getName,
       FotoPerfil,
       randomColor,
+      pageUser,
 
       
 

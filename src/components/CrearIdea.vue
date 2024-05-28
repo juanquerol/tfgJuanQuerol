@@ -87,7 +87,7 @@
   <script>
   // Asegúrate de importar tu instancia de Firebase auth
   import { ref, onMounted, watch} from 'vue'
-import { getIdeas, addIdea, getNombreByEmail, getUUID } from '@/main.js'
+import { getIdeas, addIdea, getNombreByEmail, getUUID, getEmail} from '@/main.js'
 
 
 
@@ -101,6 +101,7 @@ export default {
       Categoria: '',
       Amigos: [''],
       Fecha: new Date(),
+      EmailUsuario: '',
       
       Publico: false,
       Propietario: '',
@@ -126,6 +127,7 @@ export default {
       const nombre = await getNombreByEmail()
       idea.value.Propietario = nombre
       idea.value.IdUsuario = await getUUID()
+      idea.value.EmailUsuario = await getEmail
       await addIdea(idea.value)
       await fetchIdeas()  // Refresca las ideas después de añadir la nueva idea
       emit('idea-creada'); // Emite el evento
