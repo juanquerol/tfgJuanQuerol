@@ -2,48 +2,60 @@
     <div class="user-dashboard" v-bind:class="{ 'dark-mode': isDarkMode }">
       
       <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-      <div class="navbar-menu">
-        <div class="navbar-start">
-          <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
-          <router-link class="navbar-item" to="/amigos">Amigos</router-link>
-          <router-link class="navbar-item" to="/populares">Populares</router-link>
-          <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
-        </div>
-        <div class="navbar-end">
-          <div class="navbar-item">
-            <div class="field has-addons">
-              <div class="control">
-                <input class="input" type="text" placeholder="Buscar" v-model="searchValue">
-              </div>
-              <div class="control">
-                <button class="button is-info">
-                  Buscar
-                </button>
-              </div>
+    <div class="navbar-brand">
+      
+      
+        <div class="navbar-item">
+          <div class="field has-addons">
+            <div class="control">
+              <input class="input" type="text" placeholder="Buscar" v-model="searchValue">
             </div>
           </div>
-          <div class="navbar-item">
-            <div class="profile-container">
-      <!-- Foto de perfil -->
-      <div class="profile-image-container" v-if="FotoPerfil || FotoPerfil>=1">
-        <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
-      </div>
-      <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
-      <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
-    <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
-  </div>
-      <!-- Nombre de usuario -->
-      <router-link class="username" to="/perfil">{{ nombreUsuario1 }}</router-link>
+        </div>
+        <button class="button is-primary is-small is-rounded" @click="showForm = true">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>Crear idea</span>
+        </button>
+      <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample" @click="toggleBurger">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
     </div>
+
+    <div id="navbarBasicExample" class="navbar-menu" :class="{ 'is-active': isActive }">
+      
+
+      <div class="navbar-end">
+        <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
+        <router-link class="navbar-item" to="/amigos">Amigos</router-link>
+        <router-link class="navbar-item" to="/populares">Populares</router-link>
+        <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
+        
+        <div class="navbar-item">
+          <div class="profile-container">
+            <!-- Foto de perfil -->
+            <div class="profile-image-container" v-if="FotoPerfil || FotoPerfil>=1">
+              <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
+            </div>
+            <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
+            <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
+              <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+            </div>
+            <!-- Nombre de usuario -->
+            <a class="username" @click="changePerfil">{{ nombreUsuario1 }}</a>
           </div>
         </div>
       </div>
-    </nav>
+    </div>
+  </nav>
     <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
     <div v-if="showForm">
-      <button class="button is-info" @click="showForm = false">cancelar</button>
-      <CrearIdea @idea-creada="showForm = false"/> <!-- Escucha el evento aquí -->
       
+      <CrearIdea @idea-creada="showForm = false"/> <!-- Escucha el evento aquí -->
+      <button class="button is-info" @click="showForm = false">cancelar</button>
     </div>
     <div v-else>
       <div v-if="searchValue.length <1">
@@ -128,7 +140,7 @@
 </div>
       <div v-else class="columns is-multiline">
       <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index" @click="selectIdea(idea)">
-        <div class="card">
+        <div class="card idea">
           <div class="card-content">
             <div class="content">
               <div class="columns is-vcentered">
@@ -161,7 +173,7 @@
         </div>
       </div>
     </div>
-    <button class="button is-primary" @click="showForm = true">crear idea</button>
+    
       </div>
       <div v-else>
         <div v-if="selectedIdea" class="columns is-centered">
@@ -243,9 +255,9 @@
   </div>
 </div>
       <div v-else class="columns is-multiline">
-        <h1>Ideas</h1>
+        
       <div class="column is-one-third" v-for="(idea, index) in searchResultsIdeas" :key="index" @click="selectIdea(idea)">
-        <div class="card">
+        <div class="card idea">
           <div class="card-content">
             <div class="content">
               <div class="columns is-vcentered">
@@ -305,13 +317,9 @@
       </div>
       </div>
       
-    <button class="button is-primary" @click="showForm = true">crear idea</button>
+    
     </div>
-  
     </div>
-    
-    
-    
   </div>
   </template>
   
@@ -320,7 +328,7 @@
 import { useRouter } from 'vue-router'
 import { getIdeas, getPersonaById, getPersonas, getPersonaByEmail,
    cometariosIdea, crearComentario,
-    getNombreByEmail,addLikeToIdea  } from '@/main.js'
+    getNombreByEmail, addLikeToIdea  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 import anime from 'animejs/lib/anime.es.js';
 // import { useRouter } from 'vue-router';
@@ -351,6 +359,7 @@ export default {
     const searchResultsUsers = ref([]); // Resultados de búsqueda de nombres de usuario
     const nombreUsuario1 = ref(''); // Define nombreUsuario aquí
     const FotoPerfil = ref(''); // Define nombreUsuario aquí
+    const isActive = ref(false);
    
     
     
@@ -428,6 +437,15 @@ const addLike = async (idea, index) => {
 
     };
     //foto de perfil
+    const changePerfil = async () => {
+      router.push('/perfil')
+    }
+    const changeIdeas = async () => {
+      router.push('/myideas')
+    }
+    const toggleBurger = () => {
+      isActive.value = !isActive.value;
+    };
     
     onMounted(async () => {
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -448,6 +466,7 @@ if (showForm.value ==false) {
   ideas.value = data
     
 }
+selectedIdea.value = null;
       usuario.value = await getPersonaByEmail()
       console.log(usuario.value)
       FotoPerfil.value = usuario.value.FotoPerfilURL
@@ -496,6 +515,7 @@ if (showForm.value ==false) {
 
     return {
       isAnimating,
+      toggleBurger,
       ideas,
       fetchIdeas,
       selectedIdea,
@@ -512,11 +532,14 @@ if (showForm.value ==false) {
       nombreUsuario1,
       searchResultsUsers,
       search,
+      isActive,
       formatDate,
       getName,
       FotoPerfil,
       randomColor,
       pageUser,
+      changePerfil,
+      changeIdeas
 
       
 
@@ -566,6 +589,7 @@ if (showForm.value ==false) {
 }
 
 .button.is-info {
+  margin-top: 1rem;
   background-color: #00d1b2;
 }
 
@@ -574,11 +598,13 @@ if (showForm.value ==false) {
 }
 
 .button.is-primary {
-  background-color: #3273dc;
+  background-color: #00d1b2;
+  color: #fff;
 }
 
 .button.is-primary:hover {
-  background-color: #276cda;
+  background-color: #004dd1;
+  color: #fff;
 }
 
 .button.is-danger {
@@ -691,6 +717,58 @@ if (showForm.value ==false) {
 .dark-mode .card {
     background-color: #444;
     color: #fff;
+}
+.card.idea {
+  background-color: #f7fafc; /* Color de fondo */
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  margin-bottom: 20px;
+  transition: transform 0.3s ease; /* Transición suave al pasar el cursor */
+}
+
+.card.idea:hover {
+  transform: translateY(-5px); /* Efecto de elevación al pasar el cursor */
+}
+
+.card.idea .card-header {
+  background-color: #209cee; /* Color de encabezado */
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  padding: 10px;
+}
+
+.card.idea .card-header p {
+  color: #fff; /* Color del texto en el encabezado */
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.card.idea .card-content {
+  padding: 15px;
+}
+
+.card.idea .content {
+  color: #4a4a4a; /* Color del texto en el contenido */
+}
+
+.card.idea .card-footer {
+  background-color: #f7fafc; /* Color del pie de tarjeta */
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  padding: 10px;
+  text-align: right;
+}
+
+.card.idea .card-footer .button {
+  background-color: #ff3860; /* Color del botón */
+  color: #fff; /* Color del texto del botón */
+  border-radius: 20px;
+  padding: 5px 15px;
+  transition: background-color 0.3s ease; /* Transición suave */
+}
+
+.card.idea .card-footer .button:hover {
+  background-color: #e20d41; /* Color de fondo del botón al pasar el cursor */
 }
 
   </style>

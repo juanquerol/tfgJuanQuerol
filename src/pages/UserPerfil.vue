@@ -1,22 +1,39 @@
 <template>
   <div class="User">
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-      <div class="navbar-brand">
-        <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
-        <router-link class="navbar-item" to="/amigos">Amigos</router-link>
-        <router-link class="navbar-item" to="/populares">Populares</router-link>
-        <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
-        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-        </a>
-      </div>
-
-      <div id="navbarBasicExample" class="navbar-menu">
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
+          <router-link class="navbar-item" to="/amigos">Amigos</router-link>
+          <router-link class="navbar-item" to="/populares">Populares</router-link>
+          <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
+        </div>
         <div class="navbar-end">
           <div class="navbar-item">
-            <router-link class="button is-primary" to="/perfil">{{nombreUsuario1}}</router-link>
+            <div class="field has-addons">
+              <div class="control">
+                <input class="input" type="text" placeholder="Buscar" v-model="searchValue">
+              </div>
+              <div class="control">
+                <button class="button is-info">
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="navbar-item">
+            <div class="profile-container">
+      <!-- Foto de perfil -->
+      <div class="profile-image-container" v-if="FotoPerfil || FotoPerfil>=1">
+        <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
+      </div>
+      <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
+      <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
+    <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+  </div>
+      <!-- Nombre de usuario -->
+      <router-link class="username" to="/perfil">{{ nombreUsuario1 }}</router-link>
+    </div>
           </div>
         </div>
       </div>
@@ -84,11 +101,10 @@
             </form>
             <div v-else>
               <div class="user-data">
-            <p><strong>Nombre:</strong> {{ persona.Nombre }}</p>
-            <p><strong>Fecha de nacimiento:</strong> {{ persona.Birthdate }}</p>
-            
-            <p><strong>Ciudad:</strong> {{ persona.Ciudad }}</p>
-            <p><strong>País:</strong> {{ persona.Pais }}</p>
+                <p v-if="persona"><strong>Nombre:</strong> {{ persona.Nombre }}</p>
+    <p v-if="persona"><strong>Fecha de nacimiento:</strong> {{ persona.Birthdate }}</p>
+    <p v-if="persona"><strong>Ciudad:</strong> {{ persona.Ciudad }}</p>
+    <p v-if="persona"><strong>País:</strong> {{ persona.Pais }}</p>
           </div>
 
           <!-- Botones de logout y editar perfil -->
@@ -106,65 +122,76 @@
 <script>
 import { onMounted , ref} from 'vue';
 import { useRouter } from 'vue-router';
-import { getNombreByEmail, updateProfile, getPersonaByEmail, logout} from '@/main';
+import { updateProfile, getOtraPersonaByEmail, logout} from '@/main';
 
 export default {
   name: 'UserPerfil',
   setup() {
-    // Aquí puedes inicializar tus variables y funciones
-    const nombreUsuario1 = ref(''); // Define nombreUsuario aquí
+    const nombreUsuario1 = ref('');
+    const userLocal = ref(JSON.parse(localStorage.getItem('user')));
     const router = useRouter();
-    const persona = ref('')
+    const persona = ref(null); // Cambiado a null para indicar que no se ha cargado aún
+    const FotoPerfil = ref('');
     const showForm = ref(false);
+    const isLoading = ref(true);
     const user = {
-      
-        Nombre: persona.value.Nombre,
-        
-        Birthdate: '',
-        Ciudad: '',
-        Pais: '',
-        FotoPerfilURL: ''
-        // Agrega más campos según sea necesario
-    }
-    //logout
-    const logoutFunction = async() => {
-      localStorage.removeItem('user')
-      await logout()
-      router.push('/')
-    }
-    
+      Nombre: '',
+      Birthdate: '',
+      Ciudad: '',
+      Pais: '',
+      FotoPerfilURL: ''
+    };
 
-    // Función para actualizar el perfil del usuario
-    const updatePerfil = async() => {
-      // Aquí puedes actualizar el perfil del usuario
+    const logoutFunction = async () => {
+      localStorage.removeItem('user');
+      await logout();
+      router.push('/');
+    };
+
+    const randomColor = () => {
+      const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+      return `#${randomColor}`;
+    };
+
+    const updatePerfil = async () => {
       try {
-        await updateProfile(user)
-        router.push('/dashboard')
+        await updateProfile(user);
+        router.push('/dashboard');
       } catch (error) {
-        console.log(error)
+        console.error('Error al actualizar el perfil:', error);
       }
+    };
 
+    onMounted(async () => {
+        
+        //{uid: "7osx09zvluOLjbPSnYLmYk4fTA22", email: "perropeliculon@gmail.com", emailVerified: false,…}
+        persona.value = await getOtraPersonaByEmail( userLocal.value.email);
+        nombreUsuario1.value = persona.value.Nombre;
+        if (persona.value) { // Comprueba si persona.value no es nulo
+      FotoPerfil.value = persona.value.FotoPerfilURL;
+      user.Nombre = persona.value.Nombre;
+      user.Birthdate = persona.value.Birthdate;
+      user.Ciudad = persona.value.Ciudad;
+      user.Pais = persona.value.Pais;
     }
-
-
-    
-    onMounted(async() => {
-      nombreUsuario1.value = await getNombreByEmail()
-      persona.value = await getPersonaByEmail()
-      // Aquí puedes cargar los datos del usuario
+        isLoading.value = false; // Desactivar el estado de carga una vez que los datos se han cargado
       
     });
-     return {
+
+    return {
       user,
       updatePerfil,
       nombreUsuario1,
       showForm,
       persona,
-      logoutFunction
-     }
-
+      logoutFunction,
+      FotoPerfil,
+      randomColor,
+      isLoading,
+      userLocal
+    };
   }
-}
+};
 </script>
 <style scoped>
 .navbar {

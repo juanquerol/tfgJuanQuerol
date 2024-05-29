@@ -10,7 +10,7 @@
         <h3 class="title has-text-dark">Iniciar sesión</h3>
         <div class="field has-icons-left">
           <div class="control has-icons-left">
-            <input class="input is-large" type="email" v-model="email" placeholder="Correo electrónico" autofocus="">
+            <input class="input is-medium" type="email" v-model="email" placeholder="Correo electrónico" autofocus="">
             <span class="icon is-small is-left">
               <i class="fas fa-envelope"></i>
             </span>
@@ -19,15 +19,16 @@
 
         <div class="field has-icons-left">
           <div class="control has-icons-left">
-            <input class="input is-large" type="password" v-model="password" placeholder="Contraseña">
+            <input class="input is-medium" type="password" v-model="password" placeholder="Contraseña">
             <span class="icon is-small is-left">
               <i class="fas fa-lock"></i>
             </span>
           </div>
         </div>
 <!-- login auth google con bulma -->
-        <button class="button is-block is-light is-large is-fullwidth" @click="googleLogin">Iniciar sesión con Google</button>
-        <button class="button is-block is-light is-large is-fullwidth">Iniciar sesión</button>
+<button class="button is-block is-success is-medium is-fullwidth">Iniciar sesión</button>
+        <button class="button is-block is-light is-medium is-fullwidth" @click="googleLogin">Iniciar sesión con Google</button>
+        
       </form>
       <p class="has-text-grey">
             <a @click="goToAbout()">Registrarse</a> &nbsp;·&nbsp;
@@ -46,7 +47,18 @@
   
   import { loginUser } from '@/main';
   import { useRouter } from 'vue-router';
-  import { loginGoogle } from '@/main';
+  import { loginGoogle, addUser, getOtraPersonaById } from '@/main';
+  const user = ref(
+      {
+        Email: '',
+        Password: '',
+        Nombre: '',
+        Birthdate: '',
+        Ciudad: '',
+        Pais: '',
+        FotoPerfilURL: '' // Nuevo campo para la URL de la foto de perfil
+      }
+    )
   
 
 const router = useRouter();
@@ -58,7 +70,27 @@ function goToAbout() {
 //auth google
 const googleLogin = async () => {
   try {
-    await loginGoogle()
+    const googleUser = await loginGoogle()
+    //si el email existe solo inicia sesion
+    const userExists = await getOtraPersonaById(googleUser.getEmail())
+    if (userExists.length > 0) {
+      await loginUser(email.value, password.value)
+      router.push('/dashboard')
+      return
+    }
+    else {
+      
+    
+    user.value.Email = googleUser.getEmail()
+    user.value.Nombre = googleUser.getName()
+    user.value.FotoPerfilURL = googleUser.getImageUrl()
+    await addUser(user.value )
+    }
+
+
+    
+
+    
     //Después de iniciar sesión con Google, redirige al usuario a la página de inicio
 
     
@@ -115,7 +147,20 @@ const login = async () => {
   }
 
   .button.is-light:hover {
-    background-color: #00d1b2;
+    background-color: #0076d1;
     color: #fff;
+  }
+  .button.is-success {
+  background-color: #00d1b2;
+  color: #fff;
+  border-color: transparent;
+  box-shadow: none;
+}
+.button.is-success:hover {
+  background-color: #0076d1;
+  color: #fff;
+}
+  .button{
+    margin-top: 1rem;
   }
   </style>

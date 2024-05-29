@@ -170,7 +170,7 @@ return persona;
   
 }
 //conseguir los datos de otra persona que soy yo por su email
-export const getOtraPersonaByemail = async (email) => {
+export const getOtraPersonaByEmail = async (email) => {
   const personasCollection = collection(db, 'personas')
   console.log(email)
 const q = query(personasCollection, where('Email', '==', email))

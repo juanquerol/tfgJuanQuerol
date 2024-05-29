@@ -9,6 +9,13 @@
               <p class="card-header-title">
                 Crear Idea
               </p>
+              <!-- Agrega un botón para cerrar la tarjeta -->
+              <a class="card-header-icon" aria-label="more options">
+                <span class="icon">
+                  <i class="fas fa-xmark" aria-hidden="true"></i>
+                </span>
+              </a>
+              
             </header>
             <div class="card-content">
               <!-- Inputs de la tarjeta central -->
@@ -127,7 +134,7 @@ export default {
       const nombre = await getNombreByEmail()
       idea.value.Propietario = nombre
       idea.value.IdUsuario = await getUUID()
-      idea.value.EmailUsuario = await getEmail
+      idea.value.EmailUsuario = await getEmail() // Cambiado de getEmailByEmail a
       await addIdea(idea.value)
       await fetchIdeas()  // Refresca las ideas después de añadir la nueva idea
       emit('idea-creada'); // Emite el evento
