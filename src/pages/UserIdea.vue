@@ -3,12 +3,7 @@
       <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       
-      <button class="button is-primary is-small is-rounded" @click="showForm = true">
-          <span class="icon">
-            <i class="fas fa-plus"></i>
-          </span>
-          <span>Crear idea</span>
-        </button>
+      
         <div class="navbar-item">
           <div class="field has-addons">
             <div class="control">
@@ -16,6 +11,12 @@
             </div>
           </div>
         </div>
+        <button class="button is-primary is-small is-rounded" @click="showForm = true">
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
+          <span>Crear idea</span>
+        </button>
       <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample" @click="toggleBurger">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -24,16 +25,15 @@
     </div>
 
     <div id="navbarBasicExample" class="navbar-menu" :class="{ 'is-active': isActive }">
-      <div class="navbar-start">
-        <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
-        <router-link class="navbar-item" to="/amigos">Amigos</router-link>
-        <router-link class="navbar-item" to="/populares">Populares</router-link>
-        <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
-        
-        
-      </div>
+      
 
       <div class="navbar-end">
+        <router-link class="navbar-item" to="/dashboard">Dashboard</router-link>
+        <router-link class="navbar-item" to="/popular">Popular</router-link>
+        <router-link class="navbar-item" to="/novedad">Novedades</router-link>
+        <router-link class="navbar-item" to="/amigos">Amigos</router-link>
+        <router-link class="navbar-item" to="/chat">Chat</router-link>
+        <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
         
         <div class="navbar-item">
           <div class="profile-container">
@@ -67,7 +67,7 @@
         <div class="content">
           <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ selectedIdea.Propietario }}</p>
+              <p >{{ selectedIdea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(selectedIdea.Fecha) }}</p>
@@ -141,6 +141,9 @@
 
 
     <div v-else class="columns is-multiline">
+      <div class="column is-full">
+    <h1 class="title has-text-centered">Mis Ideas</h1>
+  </div>
       <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index" @click="selectIdea(idea)">
         
       
@@ -200,7 +203,7 @@
         <div class="content">
           <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ selectedIdea.Propietario }}</p>
+              <p class="nombre" @click.stop="pageUser(selectedIdea.EmailUsuario)">{{ selectedIdea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(selectedIdea.Fecha) }}</p>
@@ -278,7 +281,7 @@
             <div class="content">
               <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ idea.Propietario }}</p>
+              <p class="nombre" @click.stop="pageUser(idea.EmailUsuario)">{{ idea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
@@ -345,6 +348,7 @@
 import { getIdeas , getPersonas, getMyIdeas, updateIdea, deleteIdea, cometariosIdea, crearComentario, getNombreByEmail, getOtraPersonaByEmail} from '@/main.js'
 import { format } from 'date-fns'
 import CrearIdea from '@/components/CrearIdea.vue'
+import { useRouter } from 'vue-router'
 
       
 export default {
@@ -356,6 +360,7 @@ export default {
   
   setup() {
     const userLocal = ref(JSON.parse(localStorage.getItem('user')));
+    const router = useRouter()
     const ideas = ref([])
     const searchValue = ref('')
     const showForm = ref(false)
@@ -445,6 +450,9 @@ const search = async () => {
     }
   }
 };
+const changePerfil = async () => {
+      router.push('/perfil')
+    }
 
   watch(searchValue, () => {
       if (searchValue.value.length > 1) {
@@ -499,7 +507,8 @@ const search = async () => {
       showForm,
       searchValue,
       searchResultsIdeas,
-      searchResultsUsers
+      searchResultsUsers,
+      changePerfil
     }
   }
 }
@@ -723,5 +732,11 @@ const search = async () => {
 
 .card.idea .card-footer .button:hover {
   background-color: #e20d41; /* Color de fondo del botón al pasar el cursor */
+}
+.nombre {
+  cursor:pointer;
+}
+.nombre:hover {
+  color: #00d1b2;
 }
   </style>

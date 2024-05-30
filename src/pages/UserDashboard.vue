@@ -29,11 +29,12 @@
       
 
       <div class="navbar-end">
-        <router-link class="navbar-item" to="/dashboard">Inicio</router-link>
+        <router-link class="navbar-item" to="/dashboard">Dashboard</router-link>
+        <router-link class="navbar-item" to="/popular">Popular</router-link>
+        <router-link class="navbar-item" to="/novedad">Novedades</router-link>
         <router-link class="navbar-item" to="/amigos">Amigos</router-link>
-        <router-link class="navbar-item" to="/populares">Populares</router-link>
+        <router-link class="navbar-item" to="/chat">Chat</router-link>
         <router-link class="navbar-item" to="/MyIdeas">Mis Ideas</router-link>
-        
         <div class="navbar-item">
           <div class="profile-container">
             <!-- Foto de perfil -->
@@ -67,7 +68,7 @@
         <div class="content">
           <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ selectedIdea.Propietario }}</p>
+              <p @click.stop="pageUser(selectedIdea.EmailUsuario)">{{ selectedIdea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(selectedIdea.Fecha) }}</p>
@@ -139,13 +140,18 @@
   </div>
 </div>
       <div v-else class="columns is-multiline">
-      <div class="column is-one-third" v-for="(idea, index) in ideas" :key="index" @click="selectIdea(idea)">
+        
+        <div class="column is-full">
+    <h1 class="title has-text-centered">Dashboard</h1>
+  </div>
+
+  <div class="column is-one-third" v-for="(idea, index) in shuffleArray([...ideas])" :key="index" @click="selectIdea(idea)">
         <div class="card idea">
           <div class="card-content">
             <div class="content">
               <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ idea.Propietario }}</p>
+              <p class="nombre" @click.stop="pageUser(idea.EmailUsuario)" >{{ idea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
@@ -172,7 +178,11 @@
           </div>
         </div>
       </div>
+      
+      
+
     </div>
+    
     
       </div>
       <div v-else>
@@ -184,7 +194,7 @@
         <div class="content">
           <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ selectedIdea.Propietario }}</p>
+              <p class="nombre" @click.stop="pageUser(selectedIdea.EmailUsuario)">{{ selectedIdea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(selectedIdea.Fecha) }}</p>
@@ -208,6 +218,7 @@
       <div class="card-content">
         <div class="content ">
           <div class="comentarios">
+            <!-- Muestra los comentarios de la idea seleccionada -->
   <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
     <!-- Foto de perfil y nombre de usuario -->
     <div class="comment-header">
@@ -217,7 +228,7 @@
       <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
     <p class="title is-1 has-text-white has-text-centered">{{ comentario.Nombre.substring(0, 2) }}</p>
   </div>
-      <p class="comment-username">{{ comentario.Nombre}}</p>
+      <p class="comment-username" >{{ comentario.Nombre}}</p>
     </div>
     <!-- Contenido del comentario -->
     <div class="comment-content">{{ comentario.Contenido }}</div>
@@ -254,15 +265,19 @@
     </div>
   </div>
 </div>
+
       <div v-else class="columns is-multiline">
-        
+         <!--  Muestra los resultados de búsqueda de ideas  -->
+        <div class="column is-full">
+    <h1 class="title has-text-centered">Ideas</h1>
+  </div>
       <div class="column is-one-third" v-for="(idea, index) in searchResultsIdeas" :key="index" @click="selectIdea(idea)">
         <div class="card idea">
           <div class="card-content">
             <div class="content">
               <div class="columns is-vcentered">
             <div class="column is-narrow">
-              <p>{{ idea.Propietario }}</p>
+              <p class="nombre" @click.stop="pageUser(idea.EmailUsuario)">{{ idea.Propietario }}</p>
             </div>
             <div class="column">
               <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
@@ -289,7 +304,10 @@
           </div>
         </div>
       </div>
-      
+      <!--  Muestra los resultados de búsqueda de usuarios  -->
+      <div class="column is-full">
+    <h1 class="title has-text-centered">Usuarios</h1>
+  </div>
       <div class="column is-one-fifth" v-for="(persona, index) in searchResultsUsers" :key="index" @click="pageUser(persona.Email)"  >
         <div class="card persona" >
     <div class="card-image persona">
@@ -343,13 +361,13 @@ export default {
     CrearIdea
   },
   setup() {
-    const router = useRouter();
-    const ideas = ref([]);
-    const personas = ref([]);
-    const comentarios = ref([]);
-    const isClamped = ref(true);
-    const selectedIdea = ref(null);
-    const usuario = ref('');
+    const router = useRouter();// Define router aquí
+    const ideas = ref([]);// Define ideas aquí
+    const personas = ref([]);// Define personas aquí
+    const comentarios = ref([]);// Define comentarios aquí
+    const isClamped = ref(true);// Define isClamped aquí
+    const selectedIdea = ref(null);// Define selectedIdea aquí
+    const usuario = ref('');// Define usuario aquí
     const isAnimating = ref(false); // Define isAnimating aquí
     const showForm = ref(false); // Nuevo estado para mostrar/ocultar el formulario
     let nombreUsuario = ref(''); // Define nombreUsuario aquí
@@ -359,14 +377,15 @@ export default {
     const searchResultsUsers = ref([]); // Resultados de búsqueda de nombres de usuario
     const nombreUsuario1 = ref(''); // Define nombreUsuario aquí
     const FotoPerfil = ref(''); // Define nombreUsuario aquí
-    const isActive = ref(false);
+    const isActive = ref(false);// Define isActive aquí
+
    
     
-    
+    // Función para obtener ideas
     const fetchIdeas = async () => {
   ideas.value = await getIdeas()
 }
-
+//Funcion para redirigir a la pagina de un usuario
 const pageUser = async (emailPersona) => {
   console.log(emailPersona);
   //al hacer click a un usuario se redirige a la pagin UserPage.vue con el email del usuario
@@ -374,7 +393,15 @@ const pageUser = async (emailPersona) => {
 
 
 }
-
+//Funcion para barajar un array
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+//Funcion para seleccionar una idea
 const selectIdea = async (idea) => {
   selectedIdea.value = idea;
   
@@ -382,10 +409,13 @@ const selectIdea = async (idea) => {
     comentarios.value = await cometariosIdea(idea.id);
   }
 };
+
+//Funcion para obtener un color aleatorio
 const randomColor = () => {
   const randomColor = Math.floor(Math.random()*16777215).toString(16);
   return `#${randomColor}`;
 };
+// Objeto para almacenar los datos de un nuevo comentario
 const nuevoComentario = ref({
   Contenido: '',
   IdPersona: '',
@@ -396,28 +426,24 @@ const nuevoComentario = ref({
   fotoUsuario: '',
 
 });
-
+// Función para agregar un comentario
 const agregarComentario = async () => {
   if (selectedIdea.value && selectedIdea.value.id) {
     // Obtén idPersona antes de llamar a crearComentario
     nuevoComentario.value.IdPersona = usuario.value.id;
-    
     // Obtén nombreUsuario antes de llamar a crearComentario
     nombreUsuario = await getNombreByEmail();
-    
     nuevoComentario.value.Persona = nombreUsuario;
-    
-
-    await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona, FotoPerfil.value); 
-
+    await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona, FotoPerfil.value);
     comentarios.value = await cometariosIdea(selectedIdea.value.id);
-    
   }
 };
+// Función para formatear la fecha
 const formatDate = (timestamp) => {
       const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
       return format(date, 'dd/MM/yyyy'); // Formatea la fecha
     };
+    // Función para añadir un like a una idea o comentario
 const addLike = async (idea, index) => {
   
       gsap.to(`.like-button-${index}`, { scale: 1.5, duration: 0.3, yoyo: true });
@@ -451,15 +477,7 @@ const addLike = async (idea, index) => {
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       this.darkMode = true;
     }
-      // try {
-//   let uuid = getUUID()
-//   if (uuid === null || uuid.uid === null) {
-//     router.push('/')
-//   }
-// } catch (error) {
-//   console.error(error)
-//   router.push('/')
-// }
+      
 if (showForm.value ==false) {
   const data = await getIdeas()
   console.log(data)  // Agrega esta línea
@@ -503,7 +521,7 @@ selectedIdea.value = null;
     }
   }
 };
-
+  // Observador para buscar coincidencias en los usuarios cuando cambia el valor de búsqueda
   watch(searchValue, () => {
       if (searchValue.value.length > 1) {
         search();
@@ -539,7 +557,8 @@ selectedIdea.value = null;
       randomColor,
       pageUser,
       changePerfil,
-      changeIdeas
+      changeIdeas,
+      shuffleArray,
 
       
 
@@ -769,6 +788,12 @@ selectedIdea.value = null;
 
 .card.idea .card-footer .button:hover {
   background-color: #e20d41; /* Color de fondo del botón al pasar el cursor */
+}
+.nombre {
+  cursor:pointer;
+}
+.nombre:hover {
+  color: #00d1b2;
 }
 
   </style>

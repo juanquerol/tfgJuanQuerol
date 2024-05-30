@@ -39,98 +39,35 @@
         <div class="navbar-item">
           <div class="profile-container">
             <!-- Foto de perfil -->
-            <div class="profile-image-container" v-if="fotoPerfil || fotoPerfil.length>=1">
-              <img class="profile-image" :src="fotoPerfil" alt="Foto de perfil">
+            <div class="profile-image-container" v-if="FotoPerfil || FotoPerfil>=1">
+              <img class="profile-image" :src="FotoPerfil" alt="Foto de perfil">
             </div>
             <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
             <div class="profile-image-container" v-else :style="{ backgroundColor: randomColor() }">
-              <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario1.substring(0, 2) }}</p>
+              <p class="title is-1 has-text-white has-text-centered">{{ nombreUsuario ? nombreUsuario.substring(0, 2) : '' }}</p>
             </div>
             <!-- Nombre de usuario -->
-            <a class="username" @click="changePerfil">{{ nombreUsuario1 }}</a>
+            <a class="username" @click="changePerfil">{{ nombreUsuario }}</a>
           </div>
         </div>
       </div>
     </div>
   </nav>
-    <!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
-<!-- informacion de la persona a la derecha de pantalla con estilos de bulma-->
-<div v-if="showForm">
+  <div v-if="showForm">
       
       <CrearIdea @idea-creada="showForm = false"/> <!-- Escucha el evento aquí -->
       <button class="button is-info" @click="showForm = false">cancelar</button>
     </div>
     <div v-else>
       <div v-if="searchValue.length <1">
-  <div class="columns vh-100">
-      <div class="column is-3">
-        <div class="card persona">
-          <div class="card-image persona">
-            <figure class="image is-4by3" v-if="otraFoto && otraFoto.length>=1">
-              <img :src="otraFoto" alt="Foto de perfil">
-            </figure>
-          <div class="image is-4by3" v-else :style="{ backgroundColor: randomColor() }">
-            <p class="title is-1 has-text-white has-text-centered">{{otroNombre && otroNombre.substring(0, 2)}}</p>
-          </div>
-        </div>
-        <div class="card-content persona">
-          <div class="media">
-            <div class="media-content">
-              <p class="title is-4">{{ otraPersona.Nombre }}</p>
-              <p class="subtitle is-6">{{ otraPersona.Email }}</p>
-            </div>
-          </div>
-          <div class="content">
-            <p>Ciudad: {{ otraPersona.Ciudad }}</p>
-            <p>País: {{ otraPersona.Pais }}</p>
-          </div>
-        </div>
-        <!-- boton para seguir a la persona -->
-        <div class="card-footer">
-          <button class="button is-primary is-fullwidth">Seguir</button>
-        </div>
-      </div>
-    </div>
-    <div class="column is-4">
-      <div class="columns is-multiline is-centered idea">
-      <div class="column " v-for="idea in personIdeas" :key="idea.id">
-        <div class="card idea">
-          <div class="card-content idea">
-            <div class="content">
-              <div class="columns is-vcentered">
-            <div class="column is-narrow">
-              <p>{{ idea.Propietario }}</p>
-            </div>
-            <div class="column">
-              <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
-            </div>
-          </div>
-          <h2 class="title">{{ idea.Titulo }}</h2>
-              <div class="field">
-      
-              <div class="control description-container">
-                <p class="description-text" :class="{ 'is-clamped': isClamped }">{{ idea.Descripcion }}</p>
-                <button v-if="isClamped" class="button buttonMore is-info is-small" @click="isClamped = false">Saber más</button>
-              </div>
-            </div>
-              <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
-              <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
-              
-              <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(idea, index)">
-                <span class="icon">
-                  <i class="fas fa-heart"></i> <!-- Icono de corazón -->
-                </span>
-                <span>{{ idea.Likes }}</span> <!-- Mostrar cantidad de likes -->
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-    </div>
+        <div class="column is-full">
+    <h1 class="title has-text-centered">Chat</h1>
   </div>
+  <div class="column is-full">
+    <h1 class="subtitle has-text-centered">Pendiente de hacer</h1>
   </div>
-  <div v-else>
+      </div>
+      <div v-else>
         <div v-if="selectedIdea" class="columns is-centered">
   <!-- Muestra la idea seleccionada -->
   <div class="column is-half">
@@ -247,75 +184,108 @@
       
       <div class="column is-one-fifth" v-for="(persona, index) in searchResultsUsers" :key="index" @click="pageUser(persona.Email)"  >
         <div class="card persona" >
-          <div class="card-image persona">
-            <figure class="image is-4by3" v-if="persona.FotoPerfilURL || persona.FotoPerfilURL>=1">
-              <img :src="persona.FotoPerfilURL" alt="Foto de perfil">
-            </figure>
-              <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
-            <div class="image is-4by3" v-else :style="{ backgroundColor: randomColor() }">
-              <p class="title is-1 has-text-white has-text-centered">{{ persona.Nombre.substring(0, 2) }}</p>
-            </div>
-          </div>
-          <div class="card-content persona" >
-            <div class="media">
-              <div class="media-content">
-                <p class="subtitle is-4">{{ persona.Nombre }}</p>
-                <p class="subtitle is-6">{{ persona.Email }}</p>
-              </div>
-            </div>
-
-            <div class="content">
-              Ciudad: {{ persona.Ciudad }}
-            </div>
-          </div>
+    <div class="card-image persona">
+      <figure class="image is-4by3" v-if="persona.FotoPerfilURL || persona.FotoPerfilURL>=1">
+        <img :src="persona.FotoPerfilURL" alt="Foto de perfil">
+      </figure>
+      <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
+      <div class="image is-4by3" v-else :style="{ backgroundColor: randomColor() }">
+    <p class="title is-1 has-text-white has-text-centered">{{ persona.Nombre.substring(0, 2) }}</p>
+  </div>
+    </div>
+    <div class="card-content persona" >
+      <div class="media">
+        <div class="media-content">
+          <p class="subtitle is-4">{{ persona.Nombre }}</p>
+          <p class="subtitle is-6">{{ persona.Email }}</p>
         </div>
       </div>
+
+      <div class="content">
+        Ciudad: {{ persona.Ciudad }}
       </div>
+    </div>
+  </div>
+      </div>
+      </div>
+      
     
     </div>
-
-</div>
-<!-- Aquí puedes agregar el contenido adicional que desees mostrar en la página principal -->
-    
-  </div>
+    </div>
+    </div>
 </template>
 <script>
 import { ref, onMounted, watch } from 'vue';
-import CrearIdea from '@/components/CrearIdea.vue';
-//router
-import { useRoute } from 'vue-router';
+import {  getMyIdeas, getOtraPersonaByEmail, cometariosIdea,
+  crearComentario, getIdeas, getPersonas, getNombreByEmail 
+  } from '@/main';
+import { useRouter } from 'vue-router'
+import CrearIdea from '@/components/CrearIdea.vue'
 import { format } from 'date-fns';
 
-import { getOtraPersonaByEmail, getPersonas, getIdeas, getPersonIdeas} from '@/main.js';
+
+
+
 export default {
-    name: 'UserPage',
-    components: {
-        CrearIdea
-    },
-   
+  name: 'UserAmigos',
+  components: {
+    CrearIdea
+  },
   setup() {
-    const route = useRoute()
+    const router = useRouter()
     const userLocal = ref(JSON.parse(localStorage.getItem('user')));
-    const showForm = ref(false); 
+    const selectedIdea = ref(null);
+    const searchResultsIdeas = ref([])
+    const searchResultsUsers = ref([])
+    const ideas = ref([]);
     const searchValue = ref('');
-    const searchResultsIdeas = ref([]);
-    const searchResultsUsers = ref([]);
-    const nombreUsuario1 = ref('')
-    const fotoPerfil = ref('')
-    const otraPersona = ref([])
-    const personIdeas = ref([])
+    const showForm = ref(false);
+    const isDarkMode = ref(false);
     const isActive = ref(false);
-    const persona = ref([])
-    const otraFoto = ref('')
-    const otroNombre = ref('')
+    const usuario = ref(null)
+    const FotoPerfil = ref(null)
+    const nombreUsuario = ref(null)
+    const comentarios = ref([])
+    const nombreUsuario1 = ref(null)
+    const nuevoComentario = ref({
+      Contenido: '',
+      IdPersona: '',
+      IdIdea: '',
+      Persona: ''
+    })
+    const toggleBurger = () => {
+      isActive.value = !isActive.value;
+    };
+    const changePerfil = () => {
+      router.push('/perfil');
+    };
     const randomColor = () => {
   const randomColor = Math.floor(Math.random()*16777215).toString(16);
   return `#${randomColor}`;
 };
-const toggleBurger = () => {
-      isActive.value = !isActive.value;
-    };
-const formatDate = (timestamp) => {
+const selectIdea = async (idea) => {
+      selectedIdea.value = idea
+      if (idea.id) {
+        comentarios.value = await cometariosIdea(idea.id)
+      }
+    }
+    const agregarComentario = async () => {
+  if (selectedIdea.value && selectedIdea.value.id) {
+    // Obtén idPersona antes de llamar a crearComentario
+    nuevoComentario.value.IdPersona = usuario.value.id;
+    // Obtén nombreUsuario antes de llamar a crearComentario
+    nombreUsuario1.value = await getNombreByEmail();
+    
+    nuevoComentario.value.Persona = nombreUsuario1;
+    
+
+    await crearComentario(selectedIdea.value.id, nuevoComentario.value.Contenido, nuevoComentario.value.IdPersona, nuevoComentario.value.Persona, FotoPerfil.value); 
+
+    comentarios.value = await cometariosIdea(selectedIdea.value.id);
+    
+  }
+};
+    const formatDate = (timestamp) => {
       const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
       return format(date, 'dd/MM/yyyy'); // Formatea la fecha
     };
@@ -344,51 +314,53 @@ const formatDate = (timestamp) => {
       }
     });
     onMounted(async () => {
-        
-       persona.value = await getOtraPersonaByEmail(userLocal.value.email)
-      fotoPerfil.value = persona.value.FotoPerfilURL
-      nombreUsuario1.value = persona.value.Nombre
-        otraPersona.value = await getOtraPersonaByEmail(route.params.email);
-        personIdeas.value = await getPersonIdeas(route.params.email);
-        otraFoto.value = otraPersona.value.FotoPerfilURL
-        otroNombre.value = otraPersona.value.Nombre
-       
+  //     if (showForm.value ==false) {
+  // const data = await getIdeas()
+  // console.log(data)  // Agrega esta línea
+  // ideas.value = data
+    
+// }
+      console.log(userLocal.value.email)
+      usuario.value = await getOtraPersonaByEmail(userLocal.value.email)
+      console.log(usuario.value)
       
+      FotoPerfil.value = usuario.value.FotoPerfilURL
+
+      nombreUsuario.value = usuario.value.Nombre
+      const data = await getMyIdeas()
+  console.log(data)  // Agrega esta línea
+  ideas.value = data
 
     })
-    
     return {
-        route,
-      isDarkMode: false,
-        nombreUsuario1,
-        fotoPerfil,
-        userLocal,
-        formatDate,
-         otraPersona,
-        personIdeas,
-        randomColor,
-        persona,
-        isActive,
-        toggleBurger,
-        searchValue,
-        showForm,
-        searchResultsIdeas,
-        searchResultsUsers,
-        search,
-        otraFoto,
-        otroNombre
+      searchValue,
+      showForm,
+      isDarkMode,
+      isActive,
+      toggleBurger,
+      changePerfil,
+      ideas,
+      FotoPerfil,
+      nombreUsuario,
+      usuario,
+      router,
+      randomColor,
+      selectedIdea,
+      searchResultsIdeas,
+      searchResultsUsers,
+      selectIdea,
+      agregarComentario,
+      formatDate,
+      search,
+      comentarios,
+      nombreUsuario1,
+      nuevoComentario,
+      userLocal
+      
 
-
-
-
-    }
-  },
-  
-}
-
-
-
-
+    };
+  }
+};
 </script>
 <style scoped>
   .navbar {
@@ -615,4 +587,4 @@ const formatDate = (timestamp) => {
 .nombre:hover {
   color: #00d1b2;
 }
-  </style>
+</style>

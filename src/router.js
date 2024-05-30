@@ -8,6 +8,10 @@ import MyIdeas from './pages/UserIdea.vue'
 import UserPerfil from './pages/UserPerfil.vue'
 import UserForget from './pages/UserForget.vue'
 import UserPage from './pages/UserPage.vue'
+import UserAmigos from './pages/UserAmigos.vue'
+import UserChat from './pages/UserChat.vue'
+import PagePopular from './pages/PagePopular.vue'
+import PageNovedad from './pages/PageNovedad.vue'
 
 
 const routes = [
@@ -47,7 +51,32 @@ const routes = [
       name:'UserPage',
       component: UserPage
 
-    }
+    },
+    {
+      path: '/amigos',
+      name:'Amigos',
+      component: UserAmigos
+
+    },
+    {
+      path: '/chat',
+      name:'Chat',
+      component: UserChat
+
+    },
+    {
+      path: '/popular',
+      name:'Popular',
+      component: PagePopular
+
+    },
+    {
+      path: '/novedad',
+      name:'Novedad',
+      component: PageNovedad
+
+    },
+
 
   
 

@@ -184,9 +184,12 @@ querySnapshot.forEach((doc) => {
 return persona;
 }
 //Actualizar mi perfil
-export const updateProfile = async (personaId, personaData) => {
-  const personaRef = doc(db, 'personas', personaId);
-  await updateDoc(personaRef, personaData);
+
+
+
+export const updateProfile = async (id, user) => {
+  
+  await updateDoc(doc(db, 'personas', id), user);
 };
 //login google
 export const loginGoogle = () => {
