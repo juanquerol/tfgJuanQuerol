@@ -1,5 +1,5 @@
 <template>
-    <div class="user-dashboard" v-bind:class="{ 'dark-mode': isDarkMode }">
+    <div class="user-dashboard" >
       
       <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">

@@ -8,7 +8,7 @@
         <div class="navbar-item">
           <div class="field has-addons">
             <div class="control">
-              <input class="input" type="text" placeholder="Buscar" v-model="searchValue">
+              <input class="input search-input" type="text" placeholder="Buscar" v-model="searchValue">
             </div>
           </div>
         </div>
@@ -614,5 +614,15 @@ const formatDate = (timestamp) => {
 }
 .nombre:hover {
   color: #00d1b2;
+}
+.search-input {
+  width: 100%; /* Ancho por defecto para pantallas grandes */
+}
+
+/* Cuando la pantalla es de 600px o menos, hacer el input más pequeño */
+@media (max-width: 600px) {
+  .search-input {
+    width: 70%; /* Ajusta este valor según tus necesidades */
+  }
 }
   </style>
