@@ -450,6 +450,13 @@ const search = async () => {
     }
   }
 };
+const pageUser = async (emailPersona) => {
+  console.log(emailPersona);
+  //al hacer click a un usuario se redirige a la pagin UserPage.vue con el email del usuario
+  router.push({ name: 'UserPage', params: { email: emailPersona } });
+
+
+}
 const changePerfil = async () => {
       router.push('/perfil')
     }
@@ -508,7 +515,8 @@ const changePerfil = async () => {
       searchValue,
       searchResultsIdeas,
       searchResultsUsers,
-      changePerfil
+      changePerfil,
+      pageUser
     }
   }
 }

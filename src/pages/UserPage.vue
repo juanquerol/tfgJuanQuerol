@@ -282,8 +282,9 @@
 <script>
 import { ref, onMounted, watch } from 'vue';
 import CrearIdea from '@/components/CrearIdea.vue';
+
 //router
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter} from 'vue-router';
 import { format } from 'date-fns';
 
 import { getOtraPersonaByEmail, getPersonas, getIdeas, getPersonIdeas} from '@/main.js';
@@ -295,6 +296,7 @@ export default {
    
   setup() {
     const route = useRoute()
+    const router = useRouter()
     const userLocal = ref(JSON.parse(localStorage.getItem('user')));
     const showForm = ref(false); 
     const searchValue = ref('');
@@ -308,10 +310,19 @@ export default {
     const persona = ref([])
     const otraFoto = ref('')
     const otroNombre = ref('')
+
+    
     const randomColor = () => {
   const randomColor = Math.floor(Math.random()*16777215).toString(16);
   return `#${randomColor}`;
 };
+const pageUser = async (emailPersona) => {
+  console.log(emailPersona);
+  //al hacer click a un usuario se redirige a la pagin UserPage.vue con el email del usuario
+  router.push({ name: 'UserPage', params: { email: emailPersona } });
+
+
+}
 const toggleBurger = () => {
       isActive.value = !isActive.value;
     };
@@ -335,6 +346,9 @@ const formatDate = (timestamp) => {
     }
   }
 };
+const changePerfil = async () => {
+      router.push('/perfil')
+    }
 
   watch(searchValue, () => {
       if (searchValue.value.length > 1) {
@@ -376,7 +390,9 @@ const formatDate = (timestamp) => {
         searchResultsUsers,
         search,
         otraFoto,
-        otroNombre
+        otroNombre,
+        changePerfil,
+        pageUser
 
 
 
