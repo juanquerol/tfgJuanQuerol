@@ -143,7 +143,7 @@
         <div class="column is-full">
     <h1 class="title has-text-centered">Novedades</h1>
   </div>
-        <div class="column is-one-third" v-for="(idea, index) in [...ideas].reverse()" :key="index" @click="selectIdea(idea)">
+        <div class="column is-one-third" v-for="(idea, index) in [...this.ideas].sort((a, b) => b.Fecha - a.Fecha)" :key="index" @click="selectIdea(idea)">
         <div class="card idea">
           <div class="card-content">
             <div class="content">
