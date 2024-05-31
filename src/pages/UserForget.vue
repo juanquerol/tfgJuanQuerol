@@ -8,13 +8,13 @@
                 <h3 class="title has-text-dark">Restablecer contraseña</h3>
                 <div class="field has-icons-left">
                   <div class="control has-icons-left">
-                    <input class="input is-large" type="email" v-model="email" placeholder="Correo electrónico" autofocus="">
+                    <input class="input is-medium" type="email" v-model="email" placeholder="Correo electrónico" autofocus="">
                     <span class="icon is-small is-left">
                       <i class="fas fa-envelope"></i>
                     </span>
                   </div>
                 </div>
-                <button class="button is-block is-light is-large is-fullwidth">Restablecer contraseña</button>
+                <button class="button is-block is-light is-medium is-fullwidth">Restablecer contraseña</button>
               </form>
               <p class="has-text-grey">
                 <a @click="goToLogin()">Iniciar sesión</a> &nbsp;·&nbsp;
@@ -55,7 +55,7 @@
   </script>
   <style scoped>
     .hero.is-fullheight {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/random') no-repeat center center fixed; 
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('@/assets/FotoBombillas.png') no-repeat center center fixed; 
     background-size: cover;
   }
 
