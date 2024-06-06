@@ -22,7 +22,9 @@ export default {
         Birthdate: '',
         Ciudad: '',
         Pais: '',
-        FotoPerfilURL: '' // Nuevo campo para la URL de la foto de perfil
+        FotoPerfilURL: '', // Nuevo campo para la URL de la foto de perfil
+        Seguidores: [],
+        Seguidos: [],
       }
         
 

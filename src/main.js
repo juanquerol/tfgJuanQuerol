@@ -282,7 +282,73 @@ export const getEmail = async () => {
 
   return auth.currentUser.email;
 }
+//deleteFollower cogiendo su email
+export const deleteFollowerByEmail = async (emailUsuario, emailAmigo) => {
+  const personasCollection = collection(db, 'personas');
+  const q = query(personasCollection, where('Email', '==', emailAmigo));
+  const querySnapshot = await getDocs(q);
+  let id = '';
+  querySnapshot.forEach((doc) => {
+    id = doc.id;
+  });
+  const personaDoc = doc(db, 'personas', id);
+  const persona = await getDoc(personaDoc);
+  const seguidores = persona.data().Seguidores || [];
+  const index = seguidores.indexOf(emailUsuario);
+  if (index > -1) {
+    seguidores.splice(index, 1);
+  }
+  await updateDoc(personaDoc, { Seguidores: seguidores });
+}
+//deleteSeguidos cogiendo su email
+export const deleteSeguidos = async (emailUsuario, emailAmigo) => {
+  const personasCollection = collection(db, 'personas');
+  const q = query(personasCollection, where('Email', '==', emailUsuario));
+  const querySnapshot = await getDocs(q);
+  let id = '';
+  querySnapshot.forEach((doc) => {
+    id = doc.id;
+  });
+  const personaDoc = doc(db, 'personas', id);
+  const persona = await getDoc(personaDoc);
+  const seguidos = persona.data().Seguidos || [];
+  const index = seguidos.indexOf(emailAmigo);
+  if (index > -1) {
+    seguidos.splice(index, 1);
+  }
+  await updateDoc(personaDoc, { Seguidos: seguidos });
+}
 
+//addFollower cogiendo su email
+export const addFollowerByEmail = async (emailUsuario, emailAmigo) => {
+  const personasCollection = collection(db, 'personas');
+  const q = query(personasCollection, where('Email', '==', emailAmigo));
+  const querySnapshot = await getDocs(q);
+  let id = '';
+  querySnapshot.forEach((doc) => {
+    id = doc.id;
+  });
+  const personaDoc = doc(db, 'personas', id);
+  const persona = await getDoc(personaDoc);
+  const seguidores = persona.data().Seguidores || [];
+  seguidores.push(emailUsuario);
+  await updateDoc(personaDoc, { Seguidores: seguidores });
+};
+//addSeguidos cogiendo su email
+export const addSeguidos = async (emailUsuario, emailAmigo) => {
+  const personasCollection = collection(db, 'personas');
+  const q = query(personasCollection, where('Email', '==', emailUsuario));
+  const querySnapshot = await getDocs(q);
+  let id = '';
+  querySnapshot.forEach((doc) => {
+    id = doc.id;
+  });
+  const personaDoc = doc(db, 'personas', id);
+  const persona = await getDoc(personaDoc);
+  const seguidos = persona.data().Seguidos || [];
+  seguidos.push(emailAmigo);
+  await updateDoc(personaDoc, { Seguidos: seguidos });
+};
 
 
 export async function updateIdea(ideaId, ideaData) {
@@ -320,6 +386,7 @@ export const getIdeaById = async (ideaId) => {
 export const loginUser = (email, password) => {
   return signInWithEmailAndPassword(auth, email, password);
 };
+
 export const getIdeas = async () => {
   const ideasCollection = collection(db, 'ideas');
   const ideasSnapshot = await getDocs(ideasCollection);

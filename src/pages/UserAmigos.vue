@@ -143,6 +143,53 @@
         <div class="column is-full">
     <h1 class="title has-text-centered">Amigos</h1>
   </div>
+  <div v-if="usuario && usuario.Seguidos && usuario.Seguidos.length > 0" class="columns is-multiline">
+    <div v-for="(amigo, f) in usuario.Seguidos" :key="f" class="column is-one-fifth">
+      <!-- mostrar las ideas de solo un usuario -->
+      <div class="column is-one-third" 
+          v-for="(idea, index) in ideas
+         .filter(idea => idea.EmailUsuario === amigo[f])
+         .sort((a, b) => b.Fecha - a.Fecha)" 
+        :key="index" 
+     @click="selectIdea(idea)">
+        <div class="card idea">
+          <div class="card-content">
+            <div class="content">
+              <div class="columns is-vcentered">
+            <div class="column is-narrow">
+              <p class="nombre" @click.stop="pageUser(idea.EmailUsuario)">{{ idea.Propietario }}</p>
+            </div>
+            <div class="column">
+              <p class="has-text-right">{{ formatDate(idea.Fecha) }}</p>
+            </div>
+          </div>
+          <h2 class="title">{{ idea.Titulo }}</h2>
+              <div class="field">
+      
+              <div class="control description-container">
+                <p class="description-text" :class="{ 'is-clamped': isClamped }">{{ idea.Descripcion }}</p>
+                <button v-if="isClamped" class="button buttonMore is-info is-small" @click="isClamped = false">Saber más</button>
+              </div>
+            </div>
+              <p><strong>Categoría:</strong> {{ idea.Categoria }}</p>
+              <p><strong>Amigos:</strong> {{ idea.Amigos.join(', ') }}</p>
+              
+              <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(idea, index)">
+                <span class="icon">
+                  <i class="fas fa-heart"></i> <!-- Icono de corazón -->
+                </span>
+                <span>{{ idea.Likes }}</span> <!-- Mostrar cantidad de likes -->
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+      
+    
+  </div>
+  <div v-else class="columns is-multiline">
   <div class="column is-one-third" v-for="(idea, index) in ideas.sort((a, b) => b.Propietario.localeCompare(a.Propietario))" :key="index" @click="selectIdea(idea)">
         <div class="card idea">
           <div class="card-content">
@@ -176,6 +223,7 @@
           </div>
         </div>
       </div>
+  </div>
       
       
 

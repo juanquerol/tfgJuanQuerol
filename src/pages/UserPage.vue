@@ -87,7 +87,9 @@
         </div>
         <!-- boton para seguir a la persona -->
         <div class="card-footer">
-          <button class="button is-primary is-fullwidth">Seguir</button>
+          
+          <button v-if="persona && persona.Seguidos && persona.Seguidos.includes(otraPersona.Email)" class="button is-primary is-fullwidth" @click="seguir">Dejar de seguir</button>
+<button v-else class="button is-primary is-fullwidth" @click="seguir">Seguir</button>
         </div>
       </div>
     </div>
@@ -287,7 +289,7 @@ import CrearIdea from '@/components/CrearIdea.vue';
 import { useRoute, useRouter} from 'vue-router';
 import { format } from 'date-fns';
 
-import { getOtraPersonaByEmail, getPersonas, getIdeas, getPersonIdeas} from '@/main.js';
+import { getOtraPersonaByEmail, getPersonas, getIdeas, getPersonIdeas, addFollowerByEmail, addSeguidos, deleteFollowerByEmail, deleteSeguidos} from '@/main.js';
 export default {
     name: 'UserPage',
     components: {
@@ -322,6 +324,23 @@ const pageUser = async (emailPersona) => {
   router.push({ name: 'UserPage', params: { email: emailPersona } });
 
 
+}
+const seguir = async () => {
+  // Verificar si persona.value y otraPersona.value están definidos
+  if (!persona.value || !otraPersona.value) {
+    console.error('Error: persona u otraPersona no están definidos');
+    return;
+  }
+
+  // Verificar si persona.value.Seguidos está definido
+  if (persona.value.Seguidos && persona.value.Seguidos.includes(otraPersona.value.Email)) {
+    
+    await deleteFollowerByEmail(userLocal.value.email, otraPersona.value.Email);
+    await deleteSeguidos(userLocal.value.email, otraPersona.value.Email);
+  } else {
+    await addFollowerByEmail(userLocal.value.email, otraPersona.value.Email);
+    await addSeguidos(userLocal.value.email, otraPersona.value.Email);
+  }
 }
 const toggleBurger = () => {
       isActive.value = !isActive.value;
@@ -384,6 +403,7 @@ const changePerfil = async () => {
         persona,
         isActive,
         toggleBurger,
+        seguir,
         searchValue,
         showForm,
         searchResultsIdeas,
