@@ -194,17 +194,25 @@
   </div>
     </div>
     <div class="card-content persona" >
-      <div class="media">
-        <div class="media-content">
-          <p class="subtitle is-4">{{ persona.Nombre }}</p>
-          <p class="subtitle is-6">{{ persona.Email }}</p>
-        </div>
-      </div>
+            <div class="media">
+              <div class="media-content">
+                <p class="subtitle is-4">{{ persona.Nombre }}</p>
+                <p class="subtitle is-6">{{ persona.Email }}</p>
+                <p class="subtitle is-6">Seguidores: {{ persona.Seguidores && persona.Seguidores.length }}</p>
+              <p class="subtitle is-6">Seguidos: {{ persona.Seguidos && persona.Seguidos.length }}</p>
+                
+              </div>
+            </div>
 
-      <div class="content">
-        Ciudad: {{ persona.Ciudad }}
-      </div>
-    </div>
+            <div class="content">
+              Ciudad: {{ persona.Ciudad }}
+            </div>
+          </div>
+          <div class="card-footer">
+          
+            <button v-if="usuario && usuario.Seguidos && usuario.Seguidos.includes(persona.Email)" class="button is-primary is-fullwidth" @click="seguir(persona)">Dejar de seguir</button>
+            <button v-else class="button is-primary is-fullwidth" @click="seguir(persona)">Seguir</button>
+        </div>
   </div>
       </div>
       </div>
@@ -217,7 +225,8 @@
 <script>
 import { ref, onMounted, watch } from 'vue';
 import {  getMyIdeas, getOtraPersonaByEmail, cometariosIdea,
-  crearComentario, getIdeas, getPersonas, getNombreByEmail 
+  crearComentario, getIdeas, getPersonas, getNombreByEmail,
+  addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos 
   } from '@/main';
 import { useRouter } from 'vue-router'
 import CrearIdea from '@/components/CrearIdea.vue'
@@ -238,6 +247,7 @@ export default {
     const searchResultsIdeas = ref([])
     const searchResultsUsers = ref([])
     const ideas = ref([]);
+    
     const searchValue = ref('');
     const showForm = ref(false);
     const isDarkMode = ref(false);
@@ -259,6 +269,23 @@ export default {
     const changePerfil = () => {
       router.push('/perfil');
     };
+    const seguir = async (persona) => {
+  // Verificar si persona.value y otraPersona.value están definidos
+  if (!usuario.value || !persona) {
+    console.error('Error: persona u otraPersona no están definidos');
+    return;
+  }
+
+  // Verificar si persona.value.Seguidos está definido
+  if (usuario.value.Seguidos && usuario.value.Seguidos.includes(persona.Email)) {
+    
+    await deleteFollowerByEmail(userLocal.value.email, persona.Email);
+    await deleteSeguidos(userLocal.value.email, persona.Email);
+  } else {
+    await addFollowerByEmail(userLocal.value.email, persona.Email);
+    await addSeguidos(userLocal.value.email, persona.Email);
+  }
+}
     const randomColor = () => {
   const randomColor = Math.floor(Math.random()*16777215).toString(16);
   return `#${randomColor}`;
@@ -355,7 +382,8 @@ const selectIdea = async (idea) => {
       comentarios,
       nombreUsuario1,
       nuevoComentario,
-      userLocal
+      userLocal,
+      seguir
       
 
     };

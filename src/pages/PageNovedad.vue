@@ -309,17 +309,25 @@
   </div>
     </div>
     <div class="card-content persona" >
-      <div class="media">
-        <div class="media-content">
-          <p class="subtitle is-4">{{ persona.Nombre }}</p>
-          <p class="subtitle is-6">{{ persona.Email }}</p>
-        </div>
-      </div>
+            <div class="media">
+              <div class="media-content">
+                <p class="subtitle is-4">{{ persona.Nombre }}</p>
+                <p class="subtitle is-6">{{ persona.Email }}</p>
+                <p class="subtitle is-6">Seguidores: {{ persona.Seguidores && persona.Seguidores.length }}</p>
+              <p class="subtitle is-6">Seguidos: {{ persona.Seguidos && persona.Seguidos.length }}</p>
+                
+              </div>
+            </div>
 
-      <div class="content">
-        Ciudad: {{ persona.Ciudad }}
-      </div>
-    </div>
+            <div class="content">
+              Ciudad: {{ persona.Ciudad }}
+            </div>
+          </div>
+          <div class="card-footer">
+          
+          <button v-if="usuario && usuario.Seguidos && usuario.Seguidos.includes(persona.Email)" class="button is-primary is-fullwidth" @click="seguir(persona)">Dejar de seguir</button>
+          <button v-else class="button is-primary is-fullwidth" @click="seguir(persona)">Seguir</button>
+        </div>
   </div>
       </div>
       </div>
@@ -335,7 +343,8 @@
 import { useRouter } from 'vue-router'
 import { getIdeas, getPersonaById, getPersonas, getPersonaByEmail,
    cometariosIdea, crearComentario,
-    getNombreByEmail, addLikeToIdea  } from '@/main.js'
+    getNombreByEmail, addLikeToIdea,
+   addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 import anime from 'animejs/lib/anime.es.js';
 // import { useRouter } from 'vue-router';
@@ -351,6 +360,7 @@ export default {
   },
   setup() {
     const router = useRouter();
+    const userLocal = ref(JSON.parse(localStorage.getItem('user')));
     const ideas = ref([]);
     const personas = ref([]);
     const comentarios = ref([]);
@@ -380,6 +390,23 @@ const pageUser = async (emailPersona) => {
   router.push({ name: 'UserPage', params: { email: emailPersona } });
 
 
+}
+const seguir = async (persona) => {
+  // Verificar si persona.value y otraPersona.value están definidos
+  if (!usuario.value || !persona) {
+    console.error('Error: persona u otraPersona no están definidos');
+    return;
+  }
+
+  // Verificar si persona.value.Seguidos está definido
+  if (usuario.value.Seguidos && usuario.value.Seguidos.includes(persona.Email)) {
+    
+    await deleteFollowerByEmail(userLocal.value.email, persona.Email);
+    await deleteSeguidos(userLocal.value.email, persona.Email);
+  } else {
+    await addFollowerByEmail(userLocal.value.email, persona.Email);
+    await addSeguidos(userLocal.value.email, persona.Email);
+  }
 }
 
 const selectIdea = async (idea) => {
@@ -546,7 +573,10 @@ selectedIdea.value = null;
       randomColor,
       pageUser,
       changePerfil,
-      changeIdeas
+      changeIdeas,
+      usuario,
+      
+      seguir
 
       
 

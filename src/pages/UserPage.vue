@@ -78,6 +78,8 @@
             <div class="media-content">
               <p class="title is-4">{{ otraPersona.Nombre }}</p>
               <p class="subtitle is-6">{{ otraPersona.Email }}</p>
+              <p class="subtitle is-6">Seguidores: {{ otraPersona.Seguidores && otraPersona.Seguidores.length }}</p>
+              <p class="subtitle is-6">Seguidos: {{ otraPersona.Seguidos && otraPersona.Seguidos.length }}</p>
             </div>
           </div>
           <div class="content">
@@ -88,8 +90,8 @@
         <!-- boton para seguir a la persona -->
         <div class="card-footer">
           
-          <button v-if="persona && persona.Seguidos && persona.Seguidos.includes(otraPersona.Email)" class="button is-primary is-fullwidth" @click="seguir">Dejar de seguir</button>
-<button v-else class="button is-primary is-fullwidth" @click="seguir">Seguir</button>
+          <button v-if="persona && persona.Seguidos && persona.Seguidos.includes(otraPersona.Email)" class="button is-primary is-fullwidth" @click="const userLocal = ref(JSON.parse(localStorage.getItem('user')));">Dejar de seguir</button>
+<button v-else class="button is-primary is-fullwidth" @click="seguir(otraPersona)">Seguir</button>
         </div>
       </div>
     </div>
@@ -247,29 +249,37 @@
         </div>
       </div>
       
-      <div class="column is-one-fifth" v-for="(persona, index) in searchResultsUsers" :key="index" @click="pageUser(persona.Email)"  >
+      <div class="column is-one-fifth" v-for="(persona1, index) in searchResultsUsers" :key="index" @click="pageUser(persona.Email)"  >
         <div class="card persona" >
           <div class="card-image persona">
-            <figure class="image is-4by3" v-if="persona.FotoPerfilURL || persona.FotoPerfilURL>=1">
-              <img :src="persona.FotoPerfilURL" alt="Foto de perfil">
+            <figure class="image is-4by3" v-if="persona1.FotoPerfilURL || persona1.FotoPerfilURL>=1">
+              <img :src="persona1.FotoPerfilURL" alt="Foto de perfil">
             </figure>
               <!-- si no tiene foto utilizara un fondo de un color aleatorio y con su letra inicial de su nombre -->
             <div class="image is-4by3" v-else :style="{ backgroundColor: randomColor() }">
-              <p class="title is-1 has-text-white has-text-centered">{{ persona.Nombre.substring(0, 2) }}</p>
+              <p class="title is-1 has-text-white has-text-centered">{{ persona1.Nombre.substring(0, 2) }}</p>
             </div>
           </div>
           <div class="card-content persona" >
             <div class="media">
               <div class="media-content">
-                <p class="subtitle is-4">{{ persona.Nombre }}</p>
-                <p class="subtitle is-6">{{ persona.Email }}</p>
+                <p class="subtitle is-4">{{ persona1.Nombre }}</p>
+                <p class="subtitle is-6">{{ persona1.Email }}</p>
+                <p class="subtitle is-6">Seguidores: {{ persona1.Seguidores && persona1.Seguidores.length }}</p>
+              <p class="subtitle is-6">Seguidos: {{ persona1.Seguidos && persona1.Seguidos.length }}</p>
+                
               </div>
             </div>
 
             <div class="content">
-              Ciudad: {{ persona.Ciudad }}
+              Ciudad: {{ persona1.Ciudad }}
             </div>
           </div>
+          <div class="card-footer">
+          
+          <button v-if="persona && persona.Seguidos && persona.Seguidos.includes(persona1.Email)" class="button is-primary is-fullwidth" @click="seguir(persona1)">Dejar de seguir</button>
+          <button v-else class="button is-primary is-fullwidth" @click="seguir(persona1)">Seguir</button>
+        </div>
         </div>
       </div>
       </div>
@@ -325,21 +335,21 @@ const pageUser = async (emailPersona) => {
 
 
 }
-const seguir = async () => {
+const seguir = async (otraPersona1) => {
   // Verificar si persona.value y otraPersona.value están definidos
-  if (!persona.value || !otraPersona.value) {
+  if (!persona.value || !otraPersona1.value) {
     console.error('Error: persona u otraPersona no están definidos');
     return;
   }
 
   // Verificar si persona.value.Seguidos está definido
-  if (persona.value.Seguidos && persona.value.Seguidos.includes(otraPersona.value.Email)) {
+  if (persona.value.Seguidos && persona.value.Seguidos.includes(otraPersona1.value.Email)) {
     
-    await deleteFollowerByEmail(userLocal.value.email, otraPersona.value.Email);
-    await deleteSeguidos(userLocal.value.email, otraPersona.value.Email);
+    await deleteFollowerByEmail(userLocal.value.email, otraPersona1.value.Email);
+    await deleteSeguidos(userLocal.value.email, otraPersona1.value.Email);
   } else {
-    await addFollowerByEmail(userLocal.value.email, otraPersona.value.Email);
-    await addSeguidos(userLocal.value.email, otraPersona.value.Email);
+    await addFollowerByEmail(userLocal.value.email, otraPersona1.value.Email);
+    await addSeguidos(userLocal.value.email, otraPersona1.value.Email);
   }
 }
 const toggleBurger = () => {

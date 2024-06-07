@@ -146,6 +146,8 @@
               <div class="media-content">
                 <p class="subtitle is-4" v-if="persona">{{ persona.Nombre }}</p>
                 <p class="subtitle is-6" v-if="persona">{{ persona.Email }}</p>
+                <p class="subtitle is-6" v-if="persona">Seguidores: {{persona.Seguidores.length }}</p>
+              <p class="subtitle is-6" v-if="persona">Seguidos: {{ persona.Seguidos.length }}</p>
               </div>
             </div>
             <div class="content" v-if="persona">
