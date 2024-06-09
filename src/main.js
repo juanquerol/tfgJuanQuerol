@@ -1,11 +1,11 @@
-import { createApp } from 'vue'
+import { createApp, watchEffect } from 'vue'
 import App from './App.vue'
 import router from './router.js'
 import { initializeApp } from 'firebase/app';
 
 import { GoogleAuthProvider, signInWithPopup, getAuth ,setPersistence,browserLocalPersistence , sendPasswordResetEmail, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, } from 'firebase/auth';
 //firestore
-import { getFirestore, collection, getDocs, addDoc, query, where, updateDoc, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, orderBy, collection, getDocs, addDoc, query, where, updateDoc, onSnapshot, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { ref,getDownloadURL, getStorage, uploadBytes } from 'firebase/storage';
 import 'bulma/css/bulma.css'
 import '@fortawesome/fontawesome-free/css/all.css'
@@ -30,6 +30,7 @@ const firebaseConfig = {
   
 
 const app = createApp(App);
+export {db}
 
 const listenToIdeas = () => {
   const ideasCollection = collection(db, 'ideas');
@@ -87,6 +88,48 @@ export const uploadImage = async (file) => {
     throw new Error('Error al subir la imagen: ' + error.message);
   }
 };
+export const getMensajes = async () => {
+  const mensajesCollection = collection(db, 'mensajes');
+  const mensajesSnapshot = await getDocs(mensajesCollection);
+  return mensajesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+export const addMensaje = async (mensaje) => {
+  const mensajesCollection = collection(db, 'mensajes');
+  return await addDoc(mensajesCollection, mensaje);
+}
+
+export const getCollection = (c, q) => {
+  const documents = ref(null)
+
+  // collection reference
+  const colRef = collection(db, c)
+
+  if (q) {
+    console.log(...q)
+    colRef.value = query(colRef, where(...q))
+  }
+  const colRef1 = query(colRef, orderBy("createdAt", "desc"))
+ 
+  const unsub = onSnapshot(colRef1, snap => {
+    //console.log(snap)
+    let results = []
+    snap.docs.forEach(doc => {
+      // must wait for the server to create the timestamp & send it back
+      // we don't want to edit data until it has done this
+      doc.data().createdAt && results.push({...doc.data(), id: doc.id})
+    });
+    
+    // update values
+    documents.value = results
+  })
+
+
+  watchEffect((onInvalidate) => {
+    onInvalidate(() => unsub());
+  });
+
+  return { documents }
+}
 //obtener la imagen de perfil por el email
 export const getProfileImage = async () => {
   if (!auth.currentUser) {
@@ -105,6 +148,11 @@ export const getProfileImage = async () => {
 
   return foto;
 };
+//si hay cualquier cambio en la base de datos se actualiza
+onSnapshot(collection(db, 'ideas'), () => {
+  listenToIdeas();
+});
+
 //logout
 export const logout = () => {
   return auth.signOut();
@@ -300,6 +348,18 @@ export const deleteFollowerByEmail = async (emailUsuario, emailAmigo) => {
   }
   await updateDoc(personaDoc, { Seguidores: seguidores });
 }
+//getAllMessages
+export const getAllMessages = async () => {
+  const mensajesCollection = collection(db, 'mensajes');
+  const mensajesSnapshot = await getDocs(mensajesCollection);
+  return mensajesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+//addMessage
+export const addMessage = async (mensaje) => {
+  const mensajesCollection = collection(db, 'mensajes');
+  return await addDoc(mensajesCollection, mensaje);
+}
+
 //deleteSeguidos cogiendo su email
 export const deleteSeguidos = async (emailUsuario, emailAmigo) => {
   const personasCollection = collection(db, 'personas');
@@ -395,6 +455,7 @@ export const getIdeas = async () => {
 export const addIdea = async (idea) => {
   const ideasCollection = collection(db, 'ideas');
   const ideaDocRef = await addDoc(ideasCollection, idea);
+  listenToIdeas();
 
   // Crea una subcolección 'comentarios' en el documento de la idea
   // const comentariosCollection = collection(ideaDocRef, 'comentarios');

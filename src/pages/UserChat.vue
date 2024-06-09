@@ -60,12 +60,43 @@
     </div>
     <div v-else>
       <div v-if="searchValue.length <1">
-        <div class="column is-full">
-    <h1 class="title has-text-centered">Chat</h1>
-  </div>
-  <div class="column is-full">
-    <h1 class="subtitle has-text-centered">Pendiente de hacer</h1>
-  </div>
+        
+  <!--contenedor para el chat  -->
+  <div class="chat-container">
+    <div class="chat-window">
+      <div class="chat-header">
+        <h2>Global Brainstorming Chat</h2>
+      </div>
+      <div class="chat-messages" ref="messages">
+        <div v-for="(message, index) in [...this.mensajes].sort((a, b) => a.Date - b.Date)" :key="index" :class="['message', {'message--mine': message.Email === usuario.Email}]">
+        <div class="message-content">
+          <div v-if="message.Email !== usuario.Email" class="message-header">
+            <p class="message-username">{{ message.Name }}</p>
+            <p class="message-time">{{ formatTime(message.Date) }}</p>
+          </div>
+          <div class="message-body"><p> {{ message.Messages }}</p></div>
+          <div v-if="message.Email === usuario.Email" class="message-time--mine">
+            
+            <p class="message-time">{{ formatTime(message.Date) }}</p>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input
+          type="text"
+          v-model="nuevoMensaje.Messages"
+          @keyup.enter="crearMensaje"
+          placeholder="Escribe un mensaje ..."
+          class="input is-primary"
+        />
+        <button @click="crearMensaje" class="button is-primary">enviar</button>
+      </div>
+    </div>
+      </div>
+
+   
+
       </div>
       <div v-else>
         <div v-if="selectedIdea" class="columns is-centered">
@@ -223,14 +254,16 @@
     </div>
 </template>
 <script>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 import {  getMyIdeas, getOtraPersonaByEmail, cometariosIdea,
   crearComentario, getIdeas, getPersonas, getNombreByEmail,
-  addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos 
-  } from '@/main';
+  addFollowerByEmail, addSeguidos, deleteFollowerByEmail,
+  deleteSeguidos, addMensaje, db
+} from '@/main';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useRouter } from 'vue-router'
 import CrearIdea from '@/components/CrearIdea.vue'
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 
 
@@ -247,7 +280,8 @@ export default {
     const searchResultsIdeas = ref([])
     const searchResultsUsers = ref([])
     const ideas = ref([]);
-    
+    const mensajes = ref([]);
+    let unsubscribe;
     const searchValue = ref('');
     const showForm = ref(false);
     const isDarkMode = ref(false);
@@ -257,6 +291,15 @@ export default {
     const nombreUsuario = ref(null)
     const comentarios = ref([])
     const nombreUsuario1 = ref(null)
+    
+    const nuevoMensaje = {
+      Name: '',
+      Messages: '',
+      Date: new Date(),
+      Email: userLocal.value.email,
+      FotoPerfil: FotoPerfil.value
+    }
+
     const nuevoComentario = ref({
       Contenido: '',
       IdPersona: '',
@@ -286,10 +329,17 @@ export default {
     await addSeguidos(userLocal.value.email, persona.Email);
   }
 }
+    const crearMensaje = async () => {
+      nuevoMensaje.Name = usuario.value.Nombre;
+      
+      await addMensaje(nuevoMensaje);
+      
+    };
     const randomColor = () => {
   const randomColor = Math.floor(Math.random()*16777215).toString(16);
   return `#${randomColor}`;
 };
+
 const selectIdea = async (idea) => {
       selectedIdea.value = idea
       if (idea.id) {
@@ -312,6 +362,10 @@ const selectIdea = async (idea) => {
     
   }
 };
+const formatTime = (timestamp) => {
+      const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
+      return formatDistanceToNow(date, 'dd/MM/yyyy HH:mm'); // Formatea la fecha
+    };
     const formatDate = (timestamp) => {
       const date = timestamp.toDate(); // Convierte el timestamp a una fecha de JavaScript
       return format(date, 'dd/MM/yyyy'); // Formatea la fecha
@@ -332,6 +386,13 @@ const selectIdea = async (idea) => {
     }
   }
 };
+onUnmounted(() => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      } else {
+        console.error('unsubscribe is not a function');
+      }
+    });
 
   watch(searchValue, () => {
       if (searchValue.value.length > 1) {
@@ -352,11 +413,19 @@ const selectIdea = async (idea) => {
       console.log(usuario.value)
       
       FotoPerfil.value = usuario.value.FotoPerfilURL
-
+      
+      const mensajesCollection = collection(db, 'mensajes');
+      unsubscribe = onSnapshot(mensajesCollection, (snapshot) => {
+        mensajes.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      });
+      
       nombreUsuario.value = usuario.value.Nombre
       const data = await getMyIdeas()
   console.log(data)  // Agrega esta línea
-  ideas.value = data
+  const ideasCollection = collection(db, 'ideas');
+      unsubscribe = onSnapshot(ideasCollection, (snapshot) => {
+        ideas.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      });
 
     })
     return {
@@ -383,7 +452,14 @@ const selectIdea = async (idea) => {
       nombreUsuario1,
       nuevoComentario,
       userLocal,
-      seguir
+      seguir,
+      mensajes,
+      crearMensaje,
+      nuevoMensaje,
+      formatTime,
+      format,
+      formatDistanceToNow
+      
       
 
     };
@@ -614,5 +690,125 @@ const selectIdea = async (idea) => {
 }
 .nombre:hover {
   color: #00d1b2;
+}
+.chat-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;
+ 
+}
+
+.chat-window {
+  width: 100%;
+  max-width: 800px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header {
+  background-color: #00d1b2;
+  padding: 15px;
+  text-align: center;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #f4f4f9;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 15px;
+  
+  
+}
+
+.message--mine {
+  justify-content: flex-end;
+  
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #d8d8d8;
+  position: relative;
+}
+
+.message--mine .message-content {
+  background-color: #d1e7dd;
+}
+
+.message-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 5px;
+  
+}
+
+.message-username {
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #4a69bd; 
+  margin-right: 10px;
+}
+
+.message-time {
+  font-size: 0.8em;
+  color: #999;
+  
+}
+
+.message-time--mine {
+  text-align: right;
+  font-size: 0.8em;
+  color: #aee4a6;
+}
+
+.message-body {
+  font-size: 1rem;
+  background-color: #f1f1f1;
+}
+
+.chat-input {
+  display: flex;
+  padding: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.chat-input__field {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+  background-color: #f4f4f9;
+}
+
+.chat-input__button {
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  background-color: #4a69bd;
+  color: #fff;
+  cursor: pointer;
+}
+
+.chat-input__button:hover {
+  background-color: #374785;
 }
 </style>

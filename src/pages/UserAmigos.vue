@@ -389,14 +389,15 @@
   </template>
   
   <script>
- import { ref, onMounted, watch } from 'vue'
+ import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getIdeas, getPersonaById, getPersonas, getPersonaByEmail,
    cometariosIdea, crearComentario,
     getNombreByEmail, addLikeToIdea,
-    addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos  } from '@/main.js'
+    addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos, db  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 import anime from 'animejs/lib/anime.es.js';
+import { collection, onSnapshot } from 'firebase/firestore';
 // import { useRouter } from 'vue-router';
 import { format } from 'date-fns'
 
@@ -427,6 +428,7 @@ export default {
     const FotoPerfil = ref(''); // Define nombreUsuario aquí
     const isActive = ref(false);
     const Seguidos = ref([]);
+    let unsubscribe;
 
    
     
@@ -555,7 +557,11 @@ const addLike = async (idea, index) => {
       if (showForm.value ==false) {
         const data = await getIdeas()
         console.log(data)  // Agrega esta línea
-        ideas.value = data
+        unsubscribe = onSnapshot(collection(db, 'ideas'), (snapshot) => {
+          const ideas = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          console.log(ideas)
+          ideas.value = ideas;
+        });
           
       }
       selectedIdea.value = null;
@@ -586,6 +592,9 @@ const addLike = async (idea, index) => {
 
       
     };
+    onUnmounted(() => {
+      unsubscribe();
+    });
     const search = async () => {
   const ideaFilter = await getIdeas();
   const userFilter = await getPersonas(); // Agrega esta línea

@@ -336,8 +336,8 @@
           </div>
           <div class="card-footer">
           
-            <button v-if="usuario && usuario.Seguidos && usuario.Seguidos.includes(persona.Email)" class="button is-primary is-fullwidth" @click="seguir(persona)">Dejar de seguir</button>
-            <button v-else class="button is-primary is-fullwidth" @click="seguir(persona)">Seguir</button>
+            <button v-if="usuario && usuario.Seguidos && usuario.Seguidos.includes(persona.Email)" class="button is-primary is-fullwidth" @click.stop="seguir(persona) ">Dejar de seguir</button>
+            <button v-else class="button is-primary is-fullwidth" @click.stop="seguir(persona)">Seguir</button>
         </div>
   </div>
       </div>
@@ -350,14 +350,15 @@
   </template>
   
   <script>
- import { ref, onMounted, watch } from 'vue'
+ import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getIdeas, getPersonaById, getPersonas, getPersonaByEmail,
+import { getIdeas, getPersonaById, getPersonas, getOtraPersonaByEmail,
    cometariosIdea, crearComentario,
     getNombreByEmail, addLikeToIdea,
-    addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos  } from '@/main.js'
+    addFollowerByEmail, addSeguidos, deleteFollowerByEmail,deleteSeguidos, db  } from '@/main.js'
 import CrearIdea from '@/components/CrearIdea.vue'
 import anime from 'animejs/lib/anime.es.js';
+import { collection, onSnapshot } from 'firebase/firestore';
 // import { useRouter } from 'vue-router';
 import { format } from 'date-fns'
 
@@ -383,7 +384,7 @@ export default {
     let nombreUsuario = ref(''); // Define nombreUsuario aquí
     const searchValue = ref(''); // Define searchValue aquí
     const searchResultsIdeas = ref([]); // Resultados de búsqueda de ideas
-    
+    let unsubscribe;
     const searchResultsUsers = ref([]); // Resultados de búsqueda de nombres de usuario
     const nombreUsuario1 = ref(''); // Define nombreUsuario aquí
     const FotoPerfil = ref(''); // Define nombreUsuario aquí
@@ -501,6 +502,7 @@ const addLike = async (idea, index) => {
     };
     
     onMounted(async () => {
+
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       this.darkMode = true;
     }
@@ -508,18 +510,19 @@ const addLike = async (idea, index) => {
 if (showForm.value ==false) {
   const data = await getIdeas()
   console.log(data)  // Agrega esta línea
-  ideas.value = data
-    
+  const ideasCollection = collection(db, 'ideas');
+      unsubscribe = onSnapshot(ideasCollection, (snapshot) => {
+        ideas.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      });
 }
 selectedIdea.value = null;
-      usuario.value = await getPersonaByEmail()
+      usuario.value = await getOtraPersonaByEmail(userLocal.value.email)
       console.log(usuario.value)
       FotoPerfil.value = usuario.value.FotoPerfilURL
-      nombreUsuario1.value = await getNombreByEmail()
+      nombreUsuario1.value = usuario.value.Nombre
       
-      const data = await getIdeas()
-  console.log(data)  // Agrega esta línea
-  ideas.value = data
+      
+  
     })
     const getName = async (id) => {
       
@@ -532,6 +535,13 @@ selectedIdea.value = null;
 
       
     };
+    onUnmounted(() => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      } else {
+        console.error('unsubscribe is not a function');
+      }
+    });
     const search = async () => {
   const ideaFilter = await getIdeas();
   const userFilter = await getPersonas(); // Agrega esta línea
