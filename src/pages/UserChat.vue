@@ -254,7 +254,7 @@
     </div>
 </template>
 <script>
-import { ref, onMounted, watch, onUnmounted } from 'vue';
+import { ref, onMounted, watch, onUnmounted, nextTick } from 'vue';
 import {  getMyIdeas, getOtraPersonaByEmail, cometariosIdea,
   crearComentario, getIdeas, getPersonas, getNombreByEmail,
   addFollowerByEmail, addSeguidos, deleteFollowerByEmail,
@@ -333,6 +333,7 @@ export default {
       nuevoMensaje.Name = usuario.value.Nombre;
       
       await addMensaje(nuevoMensaje);
+      scrollBottom();
       
     };
     const randomColor = () => {
@@ -401,6 +402,15 @@ onUnmounted(() => {
         searchResultsIdeas.value = [];
       }
     });
+    const scrollBottom = async() => {
+      await nextTick();
+  const messageContainer = document.querySelector('.chat-messages');
+  if (messageContainer) {
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  } else {
+    console.error('No se encontró el contenedor de mensajes');
+  }
+    };
     onMounted(async () => {
   //     if (showForm.value ==false) {
   // const data = await getIdeas()
@@ -417,7 +427,10 @@ onUnmounted(() => {
       const mensajesCollection = collection(db, 'mensajes');
       unsubscribe = onSnapshot(mensajesCollection, (snapshot) => {
         mensajes.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
       });
+      scrollBottom();
+      
       
       nombreUsuario.value = usuario.value.Nombre
       const data = await getMyIdeas()
@@ -725,6 +738,10 @@ onUnmounted(() => {
   padding: 20px;
   overflow-y: auto;
   background-color: #f4f4f9;
+  overflow-y: scroll;
+  /* que vaya a abajo del scroll */
+  scroll-behavior: smooth;
+  height: 100px;
 }
 
 .message {
@@ -745,6 +762,7 @@ onUnmounted(() => {
   border-radius: 10px;
   background-color: #d8d8d8;
   position: relative;
+  
 }
 
 .message--mine .message-content {
@@ -773,7 +791,7 @@ onUnmounted(() => {
 
 .message-time--mine {
   text-align: right;
-  font-size: 0.8em;
+  font-size: 0.9em;
   color: #aee4a6;
 }
 
