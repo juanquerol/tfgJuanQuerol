@@ -94,7 +94,7 @@
       <div class="card-content">
         <div class="content ">
           <div class="comentarios">
-  <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
+  <div class="comment-container" v-for="(comentario, index) in [...this.comentarios].sort((a, b) => b.Fecha - a.Fecha)" :key="index">
     <!-- Foto de perfil y nombre de usuario -->
     <div class="comment-header">
       <div class="profile-image-container" v-if="comentario.FotoUsuario || comentario.FotoUsuario.length>=1">
@@ -110,14 +110,7 @@
     <!-- Fecha del comentario -->
     <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
     <!-- Likes -->
-    <div class="comment-likes">
-      <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(comentario, index)">
-        <span class="icon">
-          <i class="fas fa-heart"></i>
-        </span>
-        <span>{{ comentario.Likes }}</span>
-      </button>
-    </div>
+    
   </div>
 </div>
           <div>
@@ -217,7 +210,7 @@
       <div class="card-content">
         <div class="content ">
           <div class="comentarios">
-  <div class="comment-container" v-for="(comentario, index) in comentarios" :key="index">
+  <div class="comment-container" v-for="(comentario, index) in [...this.comentarios].sort((a, b) => b.Fecha - a.Fecha)" :key="index">
     <!-- Foto de perfil y nombre de usuario -->
     <div class="comment-header">
       <div class="profile-image-container" v-if="comentario.FotoUsuario || comentario.FotoUsuario.length>=1">
@@ -233,14 +226,7 @@
     <!-- Fecha del comentario -->
     <p class="comment-time">{{ formatDate(comentario.Fecha) }}</p>
     <!-- Likes -->
-    <div class="comment-likes">
-      <button class="button is-danger like-button" :class="'like-button-' + index" @click.stop="addLike(comentario, index)">
-        <span class="icon">
-          <i class="fas fa-heart"></i>
-        </span>
-        <span>{{ comentario.Likes }}</span>
-      </button>
-    </div>
+    
   </div>
 </div>
           
