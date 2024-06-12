@@ -1,4 +1,4 @@
-# red-social-tfg
+# red-social-tfg (BrainRang)
 
 ## Project setup
 ```
